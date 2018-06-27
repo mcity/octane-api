@@ -1,0 +1,17 @@
+.idea
+venv
+__pycache__
+*.pyc
+project/*.swp
+project/*.swo
+node_modules
+project/static/bower_components/*
+*.swp
+*.swo
+.DS_Store
+security/client_secret_service.json
+security/quickstart.py
+security/client_secret.json
+todo.txt
+htmlcov*
+.vscode/settings.json
