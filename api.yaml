@@ -2,12 +2,12 @@ swagger: "2.0"
 info:
   description: "RESTful/Websocket API designed for the autonomous and connected vehicle test facility at the University of Michigan"
   version: "1.0.0"
-  title: "OpenCityAPI"
+  title: "OCTANE-API"
   contact:
     name: "API support"
     email: "mcity@umich.edu"
   license:
-    name: "Mcity license"
+    name: "Mcity license???"
     url: "http://mcity.umich.edu"
 basePath: "/api/v1"
 securityDefinitions:
@@ -15,7 +15,7 @@ securityDefinitions:
    APIKeyHeader:
      type: "apiKey"
      in: "header"
-     name: "X-MCITY-API-KEY"
+     name: "X-API-KEY"
 security: #Apply securtity to all methods.
 - APIKeyHeader: []
 responses:
