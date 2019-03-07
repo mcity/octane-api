@@ -29,7 +29,7 @@ The test environment can be found at https://mvillage.um.city/apidocs
 
 The web socket (Socket.io) support is _experimental_ and not well documented. The REST API is our current recommendation for users.
 
-The next major part of our work is on the signal abstration of traffic lights.
+The next major part of our work is on the signal abstraction of traffic lights.
 
 Implemented:
 * Intersections
@@ -38,7 +38,7 @@ Implemented:
 * Rail crossings
 * Facility information
 * Initial Signal work
-* Initial websockt work
+* Initial websocket work
 
 Planned Schedule:
 * 03/2019 - Signals / Rail functions / Requests
