@@ -1,340 +1,101 @@
 swagger: "2.0"
 info:
-  description: "RESTful/Websocket API designed for the autonomous and connected vehicle test facility at the University of Michigan"
-  version: "1.0.0"
-  title: "OCTANE-API"
+  description: "Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous and connected vehicle test facilities."
+  version: "0.0.1"
+  title: "Mcity Control API"
   contact:
     name: "API support"
-    email: "mcity@umich.edu"
+    email: "mcity-engineering@umich.edu"
   license:
-    name: "Mcity license???"
-    url: "http://mcity.umich.edu"
-basePath: "/api/v1"
+    name: "MIT License"
+    url: "https://opensource.org/licenses/MIT"
+basePath: "/api/"
 securityDefinitions:
    # X-API-Key: abcdef12345
    APIKeyHeader:
      type: "apiKey"
+     description: "Tokens that expire sent to users to utilize the API"
      in: "header"
      name: "X-API-KEY"
+   APISharedKeyHeader:
+     type: "apiKey"
+     description: "Preshared keys used for management functions and callbacks"
+     in: "header"
+     name: "X-SHARED-KEY"
 security: #Apply securtity to all methods.
 - APIKeyHeader: []
 responses:
     UnauthorizedError:
       description: "Authorization Error - API key is missing or invalid"
       schema:
-        $ref: "#/definitions/ApiResponse"
+        $ref: "#/definitions/APIError"
     ConflictsError:
       description: "ID was specified, but object already exists with that ID."
       schema:
-        $ref: "#/definitions/ApiResponse"
+        $ref: "#/definitions/APIError"
     PoorFormError:
       description: "Request to this endpoint was not appropriately formed."
       schema:
-        $ref: "#/definitions/ApiResponse"
+        $ref: "#/definitions/APIError"
     NotFoundError:
       description: "Requested ID does not exist."
       schema:
-        $ref: "#/definitions/ApiResponse"
+        $ref: "#/definitions/APIError"
     TeapotError:
       description: "Request to create/modify Teapot, but I am already a teapot."
       schema:
-        $ref: "#/definitions/ApiResponse"
+        $ref: "#/definitions/APIError"
+    NotAllowedError:
+      description: "Request was denied because resource does not support this action, or the action results in an invalid state."
+      schema:
+        $ref: "#/definitions/APIError"
 tags:
-- name: "segments"
-  description: "Management of road segments and their associated devices"
+- name: "Facility"
+  description: "Information about the facility"
   externalDocs: 
+    description: "Discover Mcity"
+    url: "http://mcity.umich.edu"
+- name: "Intersections"
+  description: "Management of intersections"
+  externalDocs:
     description: "Discover Mcity's intersections"
-    url: "http://members.um.city/track/roadsegments/intersections"
-- name: "intersections"
-  description: "Management of intersections and their associated devices"
+    url: "http://members.um.city/track/intersections"
+- name: "Signals"
+  description: "Management of traffic signals"
   externalDocs: 
-    description: "Discover Mcity's intersections"
-    url: "http://members.um.city/track/roadsegments/intersections"
-- name: "rail"
+    description: "Discover Mcity's traffic signals"
+    url: "http://members.um.city/track/signals"  
+- name: "Rail"
   description: "Management of rail crossings."
   externalDocs: 
     description: "Discover Mcity's rail service"
     url: "http://members.um.city/track/rail"
-- name: "crosswalks"
-  description: "Management of instrumented and signaled crosswalks"
+- name: "Crosswalks"
+  description: "Management of crosswalks"
   externalDocs: 
-    description: "Discover Mcity's Crosswalks"
-    url: "http://members.um.city/track/crosswalks"  
-- name: "gates"
+    description: "Discover Mcity's crosswalks"
+    url: "http://members.um.city/track/crosswalks"
+- name: "Gates"
   description: "Control of facility gates"
   externalDocs: 
-    description: "Discover Mcity's intersections"
+    description: "Discover Mcity's gates"
     url: "http://members.um.city/track/gates"
-- name: "weather"
-  description: "Management of simulated facility weather events"
-- name: "traffic"
-  description: "Control and reporting of traffic broadcast within the facility via DSRC."
-- name: "roadmaintenance"
-  description: "Control and setup of road maintenance equipment"
-- name: "robots"
-  description: "Control of facility robots."
-- name: "lighting"
-  description: "Control of facility lighting."
-- name: "sensors"
-  description: "Control of additional sensors (wire loop, trip, light) and data capture devices (cameras, lidar, radar)"
-- name: "simulation"
-  description: "Allows for creation, loading, and running of test scenarios against the facility."
 - name: "WebSockets"
-  description: "Allows for subscription using websockets to events signifying changes in state of facility infastructure."
-  
+  description: "Allows websocket subscription to namespaces for facility updates. Websockets are not supported within Swagger."
+  externalDocs:
+    description: "Socket.io documentation"
+    url: "https://socket.io/"
+- name: "Management"
+  description: "Functions reserved for facility administration and system processes."
+  externalDocs:
+    description: "The Mcity API system process."
+    url: "https://mcity.umich.edu/"
 paths:
-  /segments:
-    get:
-      tags:
-      - "segments"
-      summary: "Return a list of all road segments in the facility, their associated devices, and endpoints."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Segment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "segments"
-      summary: "Creates new facility segments. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "segments"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Segment"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Segment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "segments"
-      summary: "Updates a list of existing segments to alter configuration. Returns list of updated segments on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "segments"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Segment"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Intersection"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "segments"
-      summary: "Deletes a list of existing segments within the facility. Non-existing segments will be skipped. Returns a list of all removed segments."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "segments"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Segment"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Segment"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /segments/{id}:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: An intersetion ID string.
-    get:
-      tags:
-      - "segments"
-      summary: "Return a Segment object with the specified ID."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Segment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "segments"
-      summary: "Creates a new Segment."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "segment"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Segment"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Segment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "segments"
-      summary: "Updates an existing segment, allowing control or configuration changes. Updatable fields are determined by security. Returns updated segment and its devices on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "segment"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Segment"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Segment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "segments"
-      summary: "Deletes an existing segment within the facility. Returns the removed intersection on success, does _not_ cascade, does _not_ delete associated devices."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "segment"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Segment"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Segment"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  
-  /segments/socket/updates:
-    get:
-      tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all segments and their associated devices in Mcity"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Intersection"        
-        501:
-          description: "Method not implemented at this facility."
-
   /intersections:
     get:
       tags:
-      - "intersections"
-      summary: "Return a list of Intersection objects describing all instrumented intersections within the facility."
+      - "Intersections"
+      summary: "Return a list of intersection objects."
       produces:
       - "application/json"
       responses:
@@ -349,111 +110,19 @@ paths:
         401:
           $ref: "#/responses/UnauthorizedError"
         500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "intersections"
-      summary: "Creates new facility intersections. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "intersections"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Intersection"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Intersection"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "intersections"
-      summary: "Updates a list of existing intersections to alter control or configuration. Returns list of updated intersections on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "intersections"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Intersection"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Intersection"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "intersections"
-      summary: "Deletes a list of existing intersections within the facility. Non-existing intersections will be skipped. Returns a list of all removed intersections."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "intersections"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Intersection"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Intersection"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /intersections/{id}:
+          description: "Internal server error"   
+  /intersection/{id}:
     parameters:
         - in: path
           name: id
           required: true
           type: string
           minimum: 1
-          description: An intersetion ID string.
+          description: An intersection ID string.
     get:
       tags:
-      - "intersections"
-      summary: "Return an Intersection object with the specified ID."
+      - "Intersections"
+      summary: "Return an intersection object with the specified ID."
       produces:
       - "application/json"
       responses:
@@ -466,43 +135,11 @@ paths:
         404:
           $ref: "#/responses/NotFoundError"
         500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "intersections"
-      summary: "Creates a new intersection."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "intersection"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Intersection"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Intersection"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
+          description: "Internal server error"  
     patch:
       tags:
-      - "intersections"
-      summary: "Updates an existing intersection, allowing control or configuration changes. Updatable fields are determined by security. Returns updated intersection on success."
+      - "Intersections"
+      summary: "Allows control one to many phases within an intersection."
       consumes:
       - "application/json"
       produces:
@@ -512,15 +149,56 @@ paths:
         in: body
         schema:
           type: "object"
-          items:
-           $ref: "#/definitions/Intersection"             
+          properties:
+            state:
+              description: "All values are bitstrings presenting phases 1-8 in descending order. Phase 1 and 6: 00100001"
+              type: "object"
+              properties:
+                omit:
+                  type: "string"
+                  description: "Omit specified phases. A bitstring representing request for all 8 phases in descending order."
+                  example: "00100001" 
+                hold:
+                  type: "string"
+                  description: "Hold specified phases. A bitstring representing request for all 8 phases in descending order."
+                  example: "01000010"
+                forceOff:
+                  type: "string"
+                  description: "Force off specified phases. A bitstring representing request for all 8 phases in descending order."
+                  example: "00100010"
+                omitPedestrian:
+                  type: "string"
+                  description: "Omit pedestrain call for specified phases. A bitstring representing 8 phases in descending order."
+                  example: "00010001"
+                callVehicle:
+                  type: "string"
+                  description: "A vehicle call will be placed on specified phases. A bitstring representing 8 phases in descending order."
+                  example: "00010001"
+                callPedestrian:
+                  type: "string"
+                  description: "A pedestrian call will be placed on specified phases. 8 phases in descending order."
+                  example: "10001001"  
+                reset:
+                  type: "boolean"
+                  description: "Request a reset of the timing on this traffic controller. Reset is performed before other items in this request."
+                flash:
+                  type: "boolean"
+                  description: "Toggles the intersection between an all way flash and a free timed mode."
+                timePaused:
+                  type: "boolean"
+                  description: "Pause or unpause ring time of this intersection. Causes all lights to freeze in current state."
+                timeClearControl:
+                  type: "integer"
+                  description: "Default is 0 - disabled. Changing this per traffic controller causes control commands to be cleared after input number of seconds."                  
       responses:
         200:
           description: "Success"
           schema:
             type: "object"
-            items:
-              $ref: "#/definitions/Intersection"
+            properties:
+              requestID:
+                type: "string"
+                description: "Work request ID."
         400:
           $ref: "#/responses/PoorFormError"
         401:
@@ -528,104 +206,19 @@ paths:
         404:
           $ref: "#/responses/NotFoundError"
         500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "intersections"
-      summary: "Deletes an existing intersections within the facility. Returns the removed intersection on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "intersection"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Intersection"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Intersection"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /intersections/{id}/stages:
+          description: "Internal server error"  
+  /intersection/{id}/phases:
     parameters:
         - in: path
           name: id
           required: true
-          type: string
+          type: integer
           minimum: 1
-          description: An intersetion ID string.
+          description: An intersection ID string.
     get:
+      summary: "Return list of phases configured for an intersection"
       tags:
-      - "intersections"
-      summary: "Return list of Stage of an intersections Intersection"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Stage"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-    patch:
-      tags:
-      - "intersections"
-      summary: "Allows control of a particular stage within an intersection."
-      parameters:
-      - name: "intersection"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Intersection"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Intersection"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-  /intersections/{id}/phases:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: An intersetion ID string.
-    get:
-      summary: "Return list of phases of an intersection"
-      tags:
-      - "intersections"
+      - "Intersections"
       produces:
       - "application/json"
       responses:
@@ -638,25 +231,24 @@ paths:
         404:
           $ref: "#/responses/NotFoundError"
         500:
-          description: "Internal server error"
-    patch:
+          description: "Internal server error"   
+  /intersection/{id}/signals:
+    parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+          minimum: 1
+          description: An intersection ID string.
+    get:
+      summary: "Return list of traffic signal configured for an intersection"
       tags:
-      - "intersections"
-      summary: "Allows control of a particular phases within an intersection."
-      parameters:
-      - name: "intersection"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Intersection"  
+      - "Intersections"
+      produces:
+      - "application/json"
       responses:
         200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Intersection"
+          $ref: "#/definitions/Signal"
         400:
           $ref: "#/responses/PoorFormError"
         401:
@@ -664,9 +256,32 @@ paths:
         404:
           $ref: "#/responses/NotFoundError"
         500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
+          description: "Internal server error"
+  /intersection/{id}/stages:
+    parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+          minimum: 1
+          description: An intersection ID string.
+    get:
+      summary: "Return list of suggested control groupings for the intersection (stages)"
+      tags:
+      - "Intersections"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          $ref: "#/definitions/Stage"
+        400:
+          $ref: "#/responses/PoorFormError"
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        404:
+          $ref: "#/responses/NotFoundError"
+        500:
+          description: "Internal server error"     
   /intersections/socket/updates:
     get:
       tags:
@@ -679,8 +294,6 @@ paths:
             type: "object"
             items:
               $ref: "#/definitions/Intersection"        
-        501:
-          description: "Method not implemented at this facility."
   /intersections/socket/phases:
     get:
       tags:
@@ -693,16 +306,12 @@ paths:
             type: "object"
             items:
               $ref: "#/definitions/Intersection"
-        501:
-          description: "Method not implemented at this facility."
-
-
-##Railcrossing
-  /railcrossings:
+##Signal
+  /signals:
     get:
       tags:
-      - "rail"
-      summary: "Return a list of Railcrossing objects describing all instrumented crossings within the facility."
+      - "Signals"
+      summary: "Return a list of signal objects describing all instrumented crossings within the facility."
       produces:
       - "application/json"
       responses:
@@ -711,67 +320,30 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/Railcrossing"
+              $ref: "#/definitions/Signal"
         400:
           $ref: "#/responses/PoorFormError"
         401:
           $ref: "#/responses/UnauthorizedError"
         500:
-          description: "Internal server error"
-    post:
+          description: "Internal server error"   
+  /signal/{id}:
+    parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: A signal ID string.
+    get:
       tags:
-      - "rail"
-      summary: "Creates a new railcrossing. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
+      - "Signals"
+      summary: "Return an signal object with the specified ID."
       produces:
       - "application/json"
-      parameters:
-      - name: "railcrossings"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Railcrossing"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Railcrossing"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "rail"
-      summary: "Updates a list of existing rail crossings to alter control or configuration. Returns list of updated railcrossings on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "railcrossings"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Railcrossing"             
       responses:
         200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Railcrossing"
+          $ref: "#/definitions/Signal"
         400:
           $ref: "#/responses/PoorFormError"
         401:
@@ -779,24 +351,27 @@ paths:
         404:
           $ref: "#/responses/NotFoundError"
         500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
+          description: "Internal server error"         
+  /signals/socket/updates:
+    get:
       tags:
-      - "rail"
-      summary: "Deletes a list of existing railcrossings within the facility. Non-existing railcrossings will be skipped. Returns a list of all removed railcrossings."
-      consumes:
-      - "application/json"
+      - "WebSockets"
+      summary: "Web Socket endpoint that emits current state of all signals in Mcity"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: "object"
+            items:
+              $ref: "#/definitions/Signal"
+##Railcrossing
+  /railcrossings:
+    get:
+      tags:
+      - "Rail"
+      summary: "Return a list of rail crossing objects describing all instrumented crossings within the facility."
       produces:
       - "application/json"
-      parameters:
-      - name: "railcrossings"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Railcrossing"             
       responses:
         200:
           description: "Success"
@@ -804,14 +379,14 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/Railcrossing"
+        400:
+          $ref: "#/responses/PoorFormError"
         401:
           $ref: "#/responses/UnauthorizedError"
         500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /railcrossings/{id}:
+          description: "Internal server error"   
+
+  /railcrossing/{id}:
     parameters:
         - in: path
           name: id
@@ -821,8 +396,8 @@ paths:
           description: A rail crossing ID string.
     get:
       tags:
-      - "rail"
-      summary: "Return an Railcrossing object with the specified ID."
+      - "Rail"
+      summary: "Return an rail crossing object with the specified ID."
       produces:
       - "application/json"
       responses:
@@ -835,43 +410,11 @@ paths:
         404:
           $ref: "#/responses/NotFoundError"
         500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "rail"
-      summary: "Creates a new Railcrossing."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "railcrossing"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Railcrossing"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Railcrossing"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
+          description: "Internal server error"      
     patch:
       tags:
-      - "rail"
-      summary: "Updates an existing railcrossing, allowing control or configuration changes. Updatable fields are determined by security. Returns updated railcrossing on success."
+      - "Rail"
+      summary: "Updates an existing rail crossing status, allowing for triggering. Returns request ID on success."
       consumes:
       - "application/json"
       produces:
@@ -881,15 +424,22 @@ paths:
         in: body
         schema:
           type: "object"
-          items:
-           $ref: "#/definitions/Railcrossing"             
+          properties:
+            state:
+              type: "object"
+              properties:
+                manualCall:
+                  type: "boolean"
+                  description: "Activate rail crossing cycle"          
       responses:
         200:
           description: "Success"
           schema:
             type: "object"
-            items:
-              $ref: "#/definitions/Railcrossing"
+            properties:
+              requestID:
+                type: "string"
+                description: "Work request ID."
         400:
           $ref: "#/responses/PoorFormError"
         401:
@@ -898,43 +448,12 @@ paths:
           $ref: "#/responses/NotFoundError"
         500:
           description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "rail"
-      summary: "Deletes an existing railcrossing within the facility. Returns the removed railcrossing on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "railcrossing"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Railcrossing"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Railcrossing"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
+   
   /railcrossings/socket/updates:
     get:
       tags:
       - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all railcrossings in Mcity"
+      summary: "Web Socket endpoint that emits current state of all rail crossings in Mcity"
       responses:
         200:
           description: "Success"
@@ -942,14 +461,11 @@ paths:
             type: "object"
             items:
               $ref: "#/definitions/Railcrossing"        
-        501:
-          description: "Method not implemented at this facility."
-          
 ##Crosswalks
   /crosswalks:
     get:
       tags:
-      - "crosswalks"
+      - "Crosswalks"
       summary: "Return a list of crosswalk objects describing all instrumented crossings within the facility."
       produces:
       - "application/json"
@@ -966,110 +482,18 @@ paths:
           $ref: "#/responses/UnauthorizedError"
         500:
           description: "Internal server error"
-    post:
-      tags:
-      - "crosswalks"
-      summary: "Creates new crosswalk. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "crosswalks"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Crosswalk"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Crosswalk"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "crosswalks"
-      summary: "Updates a list of existing crosswalks to alter control or configuration. Returns list of updated crosswalks on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "crosswalks"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Crosswalk"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Crosswalk"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "crosswalks"
-      summary: "Deletes a list of existing crosswalks within the facility. Non-existing crosswalks will be skipped. Returns a list of all removed railcrossings."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "crosswalks"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Crosswalk"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Crosswalk"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /crosswalks/{id}:
+
+  /crosswalk/{id}:
     parameters:
         - in: path
           name: id
           required: true
-          type: string
+          type: integer
           minimum: 1
-          description: A crosswalk ID string.
+          description: A crosswalk ID number.
     get:
       tags:
-      - "crosswalks"
+      - "Crosswalks"
       summary: "Return a crosswalk object with the specified ID."
       produces:
       - "application/json"
@@ -1083,43 +507,11 @@ paths:
         404:
           $ref: "#/responses/NotFoundError"
         500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "crosswalks"
-      summary: "Creates a new crosswalk."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "crosswalk"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Crosswalk"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Crosswalk"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
+          description: "Internal server error"        
     patch:
       tags:
-      - "crosswalks"
-      summary: "Updates an existing crosswalk, allowing control or configuration changes. Updatable fields are determined by security. Returns updated crosswalk on success."
+      - "Crosswalks"
+      summary: "Updates an existing crosswalk status, allowing for triggering. Returns request ID on success."
       consumes:
       - "application/json"
       produces:
@@ -1129,55 +521,33 @@ paths:
         in: body
         schema:
           type: "object"
-          items:
-           $ref: "#/definitions/Crosswalk"             
+          properties:
+            state:
+              type: "object"
+              properties:
+                pedestrianCall:
+                  type: "boolean"
+                  description: "Activate crosswalk cycle"
       responses:
         200:
           description: "Success"
           schema:
             type: "object"
-            items:
-              $ref: "#/definitions/Crosswalk"
+            properties:
+              requestID:
+                type: "string"
+                description: "Work request ID."
         400:
           $ref: "#/responses/PoorFormError"
         401:
           $ref: "#/responses/UnauthorizedError"
         404:
           $ref: "#/responses/NotFoundError"
+        405:
+          $ref: "#/responses/NotAllowedError"
         500:
           description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "crosswalks"
-      summary: "Deletes an existing crosswalk within the facility. Returns the removed crosswalk on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "crosswalk"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Crosswalk"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Crosswalk"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
+
   /crosswalks/socket/updates:
     get:
       tags:
@@ -1190,13 +560,13 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/Crosswalk"        
-        501:
-          description: "Method not implemented at this facility."
+                 
+     
 ##Gates
   /gates:
     get:
       tags:
-      - "gates"
+      - "Gates"
       summary: "Return a list of gate objects describing all instrumented crossings within the facility."
       produces:
       - "application/json"
@@ -1213,110 +583,18 @@ paths:
           $ref: "#/responses/UnauthorizedError"
         500:
           description: "Internal server error"
-    post:
-      tags:
-      - "gates"
-      summary: "Creates new gate. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gates"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Gate"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "gates"
-      summary: "Updates a list of existing gates to alter control or configuration. Returns list of updated gates on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gates"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Gate"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "gates"
-      summary: "Deletes a list of existing gates within the facility. Non-existing gates will be skipped. Returns a list of all removed gates."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gates"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Gate"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /gates/{id}:
+##Gate
+  /gate/{id}:
     parameters:
         - in: path
           name: id
           required: true
-          type: string
+          type: integer
           minimum: 1
-          description: A gate ID string.
+          description: A gate ID number.
     get:
       tags:
-      - "gates"
+      - "Gates"
       summary: "Return a gate object with the specified ID."
       produces:
       - "application/json"
@@ -1330,43 +608,11 @@ paths:
         404:
           $ref: "#/responses/NotFoundError"
         500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "gates"
-      summary: "Creates a new gate."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gate"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Gate"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
+          description: "Internal server error"        
     patch:
       tags:
-      - "gates"
-      summary: "Updates an existing gate, allowing control or configuration changes. Updatable fields are determined by security. Returns updated gate on success."
+      - "Gates"
+      summary: "Updates an existing gate status, allowing for triggering. Returns request ID on success."
       consumes:
       - "application/json"
       produces:
@@ -1376,55 +622,33 @@ paths:
         in: body
         schema:
           type: "object"
-          items:
-           $ref: "#/definitions/Gate"             
+          properties:
+            state:
+              type: "object"
+              properties:
+                gateCall:
+                  type: "boolean"
+                  description: "Activate gate cycle"
       responses:
         200:
           description: "Success"
           schema:
             type: "object"
-            items:
-              $ref: "#/definitions/Gate"
+            properties:
+              requestID:
+                type: "string"
+                description: "Work request ID."
         400:
           $ref: "#/responses/PoorFormError"
         401:
           $ref: "#/responses/UnauthorizedError"
         404:
           $ref: "#/responses/NotFoundError"
+        405:
+          $ref: "#/responses/NotAllowedError"
         500:
           description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "gates"
-      summary: "Deletes an existing gate within the facility. Returns the removed gate on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gate"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Gate"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Gate"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
+
   /gates/socket/updates:
     get:
       tags:
@@ -1436,17 +660,14 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/Gate"        
-        501:
-          description: "Method not implemented at this facility."
-          
-          
-##Robots
-  /robots:
+              $ref: "#/definitions/Gate"    
+     
+##Facility
+  /facility:
     get:
       tags:
-      - "robots"
-      summary: "Return a list of robot objects describing all instrumented robots within the facility."
+      - "Facility"
+      summary: "Return information about the facility and current reservation."
       produces:
       - "application/json"
       responses:
@@ -1455,2167 +676,493 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/Gate"
+              $ref: "#/definitions/Facility"
         400:
           $ref: "#/responses/PoorFormError"
         401:
           $ref: "#/responses/UnauthorizedError"
         500:
           description: "Internal server error"
-    post:
-      tags:
-      - "robots"
-      summary: "Creates new robot. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "robots"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Gate"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "robots"
-      summary: "Updates a list of existing robots to alter control or configuration. Returns list of updated robots on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "robots"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Gate"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "robots"
-      summary: "Deletes a list of existing robots within the facility. Non-existing robots will be skipped. Returns a list of all removed robots."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "robots"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Gate"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-  /robots/{id}:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A robot ID string.
-    get:
-      tags:
-      - "robots"
-      summary: "Return a robot object with the specified ID."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "robots"
-      summary: "Creates a new robot."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "robot"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Gate"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        418:
-          $ref: "#/responses/TeapotError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "robots"
-      summary: "Updates an existing robot, allowing control or configuration changes. Updatable fields are determined by security. Returns updated robot on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "robot"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Robot"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Robot"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        418:
-          $ref: "#/responses/TeapotError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "robots"
-      summary: "Deletes an existing robot within the facility. Returns the removed robot on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "robot"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Robot"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Robot"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /robots/socket/updates:
+
+  /facility/socket/updates:
     get:
       tags:
       - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all robots in Mcity"
-      responses:
-        200:
-          description: "array"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"        
-        501:
-          description: "Method not implemented at this facility."
-##Sensors
-  /sensors:
-    get:
-      tags:
-      - "sensors"
-      summary: "Return a list of sensor objects describing all instrumented sensors within the facility."
-      produces:
-      - "application/json"
+      summary: "Web Socket endpoint that emits Facility messages, updates, and warnings."
       responses:
         200:
           description: "Success"
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/Sensor"
+              $ref: "#/definitions/Facility"    
+
+
+##Management
+  /management/intersections/polling:
+    patch:
+      security:
+      - APISharedKeyHeader: []
+      tags:
+      - "Management"
+      summary: "Reserved for Facility system processes/admin. Start/Stop Intersection Traffic signal polling."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "gate"
+        in: body
+        schema:
+          type: "object"
+          properties:
+            state:
+              type: "object"
+              properties:
+                enabled:
+                  type: "boolean"
+                  description: "Starts or terminates all polling processes."
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: "object"
+            properties:
+              requestID:
+                type: "string"
+                description: "Work request ID."
         400:
           $ref: "#/responses/PoorFormError"
         401:
           $ref: "#/responses/UnauthorizedError"
         500:
           description: "Internal server error"
+  /management/facility/reset:
     post:
       tags:
-      - "sensors"
-      summary: "Creates new sensor. Rejects an entire request if any in array are invalid."
+      - "Management"
+      summary: "Reset controllable items within the facility."
       consumes:
       - "application/json"
       produces:
       - "application/json"
       parameters:
-      - name: "sensors"
+      - name: "gate"
         in: body
         schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Sensor"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Sensor"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "sensors"
-      summary: "Updates a list of existing sensors to alter control or configuration. Returns list of updated sensors on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "sensors"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Sensor"             
+          type: "object"
+          properties:
+            state:
+              type: "object"
+              properties:
+                confirm:
+                  type: "boolean"
+                  description: "Confirms the reset of the facility."
       responses:
         200:
           description: "Success"
           schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Sensor"
+            type: "object"
+            properties:
+              requestID:
+                type: "string"
+                description: "Work request ID."
         400:
           $ref: "#/responses/PoorFormError"
         401:
           $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "sensors"
-      summary: "Deletes a list of existing sensors within the facility. Non-existing sensors will be skipped. Returns a list of all removed sensors."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "sensors"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Sensor"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Sensor"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /sensors/{id}:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A sensor ID string.
-    get:
-      tags:
-      - "sensors"
-      summary: "Return a sensor object with the specified ID."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Sensor"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
         500:
           description: "Internal server error"
+  /management/device/callback:
     post:
+      security:
+      - APISharedKeyHeader: []
       tags:
-      - "sensors"
-      summary: "Creates a new sensor."
+      - "Management"
+      summary: "Reserved for Facility system processes/admin. Handles callbacks from physical devices connected to API."
       consumes:
       - "application/json"
       produces:
       - "application/json"
       parameters:
-      - name: "sensor"
+      - name: "gate"
         in: body
         schema:
           type: "object"
-          items:
-           $ref: "#/definitions/Sensor"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Sensor"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "sensors"
-      summary: "Updates an existing sensor, allowing control or configuration changes. Updatable fields are determined by security. Returns updated sensor on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "sensor"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Sensor"             
+          properties:
+            data:
+              type: "string"
+              description: "Data from event"
+            event:
+              type: "string"
+              description: "Remote Event name"
+            coreid:
+              type: "string"
+              description: "Device ID of calling device"
+            published_at:
+              type: "string"
+              description: "The time this event was published."
       responses:
         200:
           description: "Success"
           schema:
             type: "object"
-            items:
-              $ref: "#/definitions/Sensor"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "sensors"
-      summary: "Deletes an existing sensor within the facility. Returns the removed sensor on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "sensor"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Sensor"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Sensor"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /sensors/socket/updates:
-    get:
-      tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all sensors in Mcity"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Sensor"        
-        501:
-          description: "Method not implemented at this facility."
-          
-##Weather
-  /Weather:
-    get:
-      tags:
-      - "weather"
-      summary: "Return a list of weather objects/events and describe their location within the facility."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Weather"
+            properties:
+              requestID:
+                type: "string"
+                description: "Work request ID."
         400:
           $ref: "#/responses/PoorFormError"
         401:
           $ref: "#/responses/UnauthorizedError"
         500:
           description: "Internal server error"
-    post:
-      tags:
-      - "weather"
-      summary: "Creates new weather object/event. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "weather"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Weather"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Weather"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "weather"
-      summary: "Updates a list of existing weather event to alter control or configuration. Returns list of updated events on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "weather"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Weather"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Weather"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "weather"
-      summary: "Deletes a list of existing weather events within the facility. Non-existing events will be skipped, state will not be altered on delete. Returns a list of all removed sensors."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "weather"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Weather"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Weather"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /weather/{id}:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A sensor ID string.
-    get:
-      tags:
-      - "weather"
-      summary: "Return a sensor object with the specified ID."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Weather"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "weather"
-      summary: "Creates a new weather event."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "weather"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Weather"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Weather"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "weather"
-      summary: "Updates an existing weather event, allowing control or configuration changes. Updatable fields are determined by security. Returns updated weather event on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "weather"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Weather"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "weather"
-      summary: "Deletes an existing weather event within the facility. Returns the removed weather event on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "weather"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Weather"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Weather"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /weather/socket/updates:
-    get:
-      tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all weather events in Mcity"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Weather"        
-        501:
-          description: "Method not implemented at this facility."
-   
-##Traffic
-  /traffic:
-    get:
-      tags:
-      - "traffic"
-      summary: "Return a list of traffic objects describing traffic within the facility."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Traffic"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "traffic"
-      summary: "Creates new traffic object. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "traffic"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Traffic"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Traffic"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "traffic"
-      summary: "Updates a list of existing traffic to alter control or configuration. Returns list of updated traffic on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "traffic"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Traffic"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Traffic"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "traffic"
-      summary: "Deletes a list of existing traffic within the facility. Non-existing traffic will be skipped. Returns a list of all removed traffic."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "traffic"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Traffic"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Traffic"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /traffic/{id}:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A traffic object ID string.
-    get:
-      tags:
-      - "traffic"
-      summary: "Return a traffic object with the specified ID."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Traffic"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "traffic"
-      summary: "Creates a new traffic object."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "traffic"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Traffic"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Traffic"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "traffic"
-      summary: "Updates an existing traffic object, allowing control or configuration changes. Updatable fields are determined by security. Returns updated traffic object on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "traffic"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Traffic"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Traffic"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "traffic"
-      summary: "Deletes an existing traffic within the facility. Returns the removed traffic object on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "traffic"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Traffic"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Traffic"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /traffic/socket/updates:
-    get:
-      tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all traffic in Mcity"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Traffic"        
-        501:
-          description: "Method not implemented at this facility."
-          
-##Lighting
-  /lighting:
-    get:
-      tags:
-      - "lighting"
-      summary: "Return a list of lighting objects describing lighting within the facility."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Lighting"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "lighting"
-      summary: "Creates new lighting object. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "lighting"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Lighting"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Lighting"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "lighting"
-      summary: "Updates a list of existing lighting to alter control or configuration. Returns list of updated lighting on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "lighting"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Lighting"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Lighting"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "lighting"
-      summary: "Deletes a list of existing lighting within the facility. Non-existing lighting will be skipped. Returns a list of all removed lighting."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "lighting"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Lighting"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Lighting"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /lighting/{id}:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A lighting object ID string.
-    get:
-      tags:
-      - "lighting"
-      summary: "Return a lighting object with the specified ID."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Lighting"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "lighting"
-      summary: "Creates a new lighting object."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "lighting"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Lighting"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Lighting"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "lighting"
-      summary: "Updates an existing lighting object, allowing control or configuration changes. Updatable fields are determined by security. Returns updated lighting object on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "lighting"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Lighting"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Lighting"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "lighting"
-      summary: "Deletes an existing lighting within the facility. Returns the removed lighting object on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "lighting"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Lighting"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Lighting"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /lighting/socket/updates:
-    get:
-      tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all lighting in Mcity"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Lighting"        
-        501:
-          description: "Method not implemented at this facility."
-##Road Maintenance
-  /roadmaintenance:
-    get:
-      tags:
-      - "roadmaintenance"
-      summary: "Return a list of roadmaintenance objects describing roadmaintenance within the facility."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/MaintenanceEquipment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "roadmaintenance"
-      summary: "Creates new roadmaintenance object. Rejects an entire request if any in array are invalid."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "roadmaintenance"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/MaintenanceEquipment"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/MaintenanceEquipment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "roadmaintenance"
-      summary: "Updates a list of existing roadmaintenance to alter control or configuration. Returns list of updated roadmaintenance on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "roadmaintenance"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/MaintenanceEquipment"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/MaintenanceEquipment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "roadmaintenance"
-      summary: "Deletes a list of existing roadmaintenance within the facility. Non-existing roadmaintenance will be skipped. Returns a list of all removed roadmaintenance."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "roadmaintenance"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/MaintenanceEquipment"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/MaintenanceEquipment"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /roadmaintenance/{id}:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A roadmaintenance object ID string.
-    get:
-      tags:
-      - "roadmaintenance"
-      summary: "Return a roadmaintenance object with the specified ID."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/MaintenanceEquipment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "roadmaintenance"
-      summary: "Creates a new roadmaintenance object."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "roadmaintenance"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/MaintenanceEquipment"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/MaintenanceEquipment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "roadmaintenance"
-      summary: "Updates an existing roadmaintenance object, allowing control or configuration changes. Updatable fields are determined by security. Returns updated roadmaintenance object on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "roadmaintenance"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/MaintenanceEquipment"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/MaintenanceEquipment"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "roadmaintenance"
-      summary: "Deletes an existing roadmaintenance within the facility. Returns the removed roadmaintenance object on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "roadmaintenance"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/MaintenanceEquipment"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/MaintenanceEquipment"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."        
-  /roadmaintenance/socket/updates:
-    get:
-      tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all roadmaintenance in Mcity"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/MaintenanceEquipment"        
-        501:
-          description: "Method not implemented at this facility."
-##Simulation
-  /simulation:
-    get:
-      tags:
-      - "simulation"
-      summary: "Return a list of loaded simulations during this facility session.."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "simulation"
-      summary: "Loads new simulations into this facility session. No validation of simulation is done. Returns only accepted simulation loads."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "simulations"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Simulation"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "roadmaintenance"
-      summary: "Updates a list of existing simulations to alter control or configuration. Returns list of updated simulations on success. Rejects entire requests if any individual items fail. Updatable fields are determined by security."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "simulations"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Simulation"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "roadmaintenance"
-      summary: "Deletes a list of existing simulations from the facility session. Non-existing simulations will be skipped. Returns a list of all removed simulations."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "simulations"
-        in: body
-        schema:
-          type: "array"
-          items:
-           $ref: "#/definitions/Simulation"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Simulation"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-          
-  /simulation/{id}:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A simulation object ID string.
-    get:
-      tags:
-      - "simulation"
-      summary: "Return a simulation object with the specified ID."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-    post:
-      tags:
-      - "simulation"
-      summary: "Creates a new simulation object."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "simulation"
-        in: body
-        schema:
-          type: "object"
-          $ref: "#/definitions/Simulation"  
-      responses:
-        201:
-          description: "Created"
-          schema:
-            type: "object"
-            $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        409:
-          $ref: "#/responses/ConflictsError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."         
-    patch:
-      tags:
-      - "simulation"
-      summary: "Updates an existing simulation, allowing control or configuration changes. Updatable fields are determined by security. Returns updated simulation object on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "simulation"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Simulation"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."
-    delete:
-      tags:
-      - "simulation"
-      summary: "Deletes an existing simulation within the facility. Returns the removed simulation object on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "simulation"
-        in: body
-        schema:
-          type: "object"
-          items:
-           $ref: "#/definitions/Simulation"             
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Simulation"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-        501:
-          description: "Method not implemented at this facility."     
-  /simulation/{id}/validate:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A simulation object ID string.
-    patch:
-      tags:
-      - "simulation"
-      summary: "Attempts to validate a simulation against the current facility, if it can't be validated then a list of missing objects or unsatisfied depdendencies will be returned. On validation an updated simulation object will be returned with new locations of all objects."
-      produces:
-      - "application/json"
-      responses:
-        200:
-          $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"   
-  /simulation/{id}/setup:
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A simulation object ID string.
-    get:
-      tags:
-      - "simulation"
-      summary: "Checks all objects in the facility, that are instrumented, are in the right location and state for this simulation. Returns list of exception items with desired state/location."
-      produces:
-      - "application/json"
-      responses:
-        200: #TODO create a generic exception return data structure.
-          $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"  
-  /simulation/{id}/start: #TODO:Should we handle starting multiple simulations at once?
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A simulation object ID string.
-    patch: #TODO define error structure type.
-      tags:
-      - "simulation"
-      summary: "Starts a specific simulation. If in bad state, returns error."
-      produces:
-      - "application/json"
-      responses:
-        200: #TODO create a generic exception return data structure.
-          $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"  
-  /simulation/{id}/stop: #TODO:Should we handle starting multiple simulations at once?
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A simulation object ID string.
-    patch: #TODO define error structure type.
-      tags:
-      - "simulation"
-      summary: "Stops a specific simulation. If in bad state, returns error."
-      produces:
-      - "application/json"
-      responses:
-        200: #TODO create a generic exception return data structure.
-          $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-  /simulation/{id}/pause: #TODO:Should we handle starting multiple simulations at once?
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A simulation object ID string.
-    patch: #TODO define error structure type.
-      tags:
-      - "simulation"
-      summary: "Pauses a specific simulation. If in bad state, returns error."
-      produces:
-      - "application/json"
-      responses:
-        200: #TODO create a generic exception return data structure.
-          $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-  /simulation/{id}/resume: #TODO:Should we handle starting multiple simulations at once?
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A simulation object ID string.
-    patch: #TODO define error structure type.
-      tags:
-      - "simulation"
-      summary: "Resumes a specific simulation. If in bad state, returns error."
-      produces:
-      - "application/json"
-      responses:
-        200: #TODO create a generic exception return data structure.
-          $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-  /simulation/{id}/reset: #TODO:Should we handle starting multiple simulations at once?
-    parameters:
-        - in: path
-          name: id
-          required: true
-          type: string
-          minimum: 1
-          description: A simulation object ID string.
-    patch: #TODO define error structure type.
-      tags:
-      - "simulation"
-      summary: "Resets a specific simulation. If in bad state, returns error."
-      produces:
-      - "application/json"
-      responses:
-        200: #TODO create a generic exception return data structure.
-          $ref: "#/definitions/Simulation"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-  /simulation/socket/updates:
-    get:
-      tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all state changes to simulations and their events within. in Mcity"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Simulation"        
-        501:
-          description: "Method not implemented at this facility."
-          
-          
-                 
+ 
 ##Model definitions
 definitions:
-  V2X_Type:
-    type: "object"
-    description: "Describess the V2X capabilities of an object."
-    properties:
-      id:
-        type: "integer"
-      name:
-        type: "string"
-      type:
-        type: "string"
-        enum: [J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
-      messages:
-        type: "string"
-        enum: [BSM]
-  V2X_Configuration:
-    type: "object"
-    description: "Describess the currently enabled V2X configuration of an object."
-    properties:
-      status:
-        type: "string"
-        enum: [ON, OFF]
-      selected:
-        type: "object"
-        $ref: "#/definitions/V2X_Type"
-      supported:
-        type: "array"
-        items:
-          $ref: "#/definitions/V2X_Type"
-  Geometry:
-    type: object
-    description: GeoJSon geometry
-    discriminator: type
-    required:
-      - type
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#geometry-objects
-    properties:
-      type:
-        type: string
-        enum:
-        - Point
-        - LineString
-        - Polygon
-        - MultiPoint
-        - MultiLineString
-        - MultiPolygon
-        description: the geometry type
-  
-  Point2D:
-    type: array
-    maxItems: 2
-    minItems: 2
-    items:
-      type: number
-  
-  Point:
-    type: object
-    description: GeoJSon geometry
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#id2
-    allOf:
-      - $ref: "#/definitions/Geometry"
-      - properties:
-          coordinates:
-            $ref: '#/definitions/Point2D'
-    
-  LineString:
-    type: object
-    description: GeoJSon geometry
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#id3
-    allOf:
-      - $ref: "#/definitions/Geometry"
-      - properties:
-          coordinates:
-            type: array
-            items:
-              $ref: '#/definitions/Point2D'
-
-  Polygon:
-    type: object
-    description: GeoJSon geometry
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#id4
-    allOf:
-      - $ref: "#/definitions/Geometry"
-      - properties:
-          coordinates:
-            type: array
-            items:
-              type: array
-              items:
-                $ref: '#/definitions/Point2D'
-      
-  MultiPoint:
-    type: object
-    description: GeoJSon geometry
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#id5
-    allOf:
-      - $ref: "#/definitions/Geometry"
-      - properties:
-          coordinates:
-            type: array
-            items:
-              $ref: '#/definitions/Point2D'
-            
-  MultiLineString:
-    type: object
-    description: GeoJSon geometry
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#id6
-    allOf:
-      - $ref: "#/definitions/Geometry"   
-      - properties:
-          coordinates:
-            type: array
-            items:
-              type: array
-              items:
-                $ref: '#/definitions/Point2D'
-      
-      
-  MultiPolygon:
-    type: object
-    description: GeoJSon geometry
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#id6
-    allOf:
-      - $ref: "#/definitions/Geometry"
-      - properties:
-          coordinates:
-            type: array
-            items:
-              type: array
-              items:
-                type: array
-                items:
-                  $ref: '#/definitions/Point2D'
-      
-  GeometryCollection:
-    type: object
-    description: GeoJSon geometry collection
-    required:
-     - type
-     - geometries
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#geometrycollection
-    properties:
-      type:
-        type: string
-        enum:
-        - GeometryCollection
-      geometries:
-        type: array
-        items:
-          $ref: '#/definitions/Geometry'
   Stage:
     type: "object"
-    description: "Describes a set of non-conflicting phases."
+    description: "Describes a suggested control grouping for an intersection. Stages are lights that work together to make non-conflicting sets of phases."
     properties:
-      id:
-        type: "integer"
-      description: 
+      name:
         type: "string"
-      number:
+        description: "A text description of the phases controlled by this stage." 
+      controlGroup:
         type: "integer"
-      phases:
-        type: "array"
-        items:
-          $ref: "#/definitions/Phase"
+        description: "An id that can be used to hold/omit/force off linked parts of an intersection signal set."
   Phase:
     type: "object"
     description: "Describes a set of one or more signal heads that are wired together, all heads will show the same indication"
     properties:
-      id:
+      number:
         type: "integer"
-      name:
-        type: "string"
+        description: "The phase number as configured on the traffic controller"
       bound:
         type: "string"
+        description: "The direction of traffic this phase controls. A signal with this phase would face the opposite direction."
         enum: [north, south, east, west]
       turn: 
         type: "string"
+        description: "Direction of movement this signal is setup to control"
         enum: [left, right, through]
-      status:
-        type: "string"
-        enum: [off, steady, flashing]
-      color:
-        type: "string"
-        enum: [red, green, yellow]
-      timing:
-        type: "object"
-        properties:
-          min_time_to_change:
-            type: "integer"
-            format: "int8"
-          max_time_to_change:
-            type: "integer"
-            format: "int8"
-          timestramp:
-            type: "string"
-            format: "date-time"
-  Intersection: #TODO: how to handle crosswalks connected to intersections?
+  Signal:
     type: "object"
-    description: "Describes an intersection made of up several phases (wired together signal heads), the groupings of signal heads have stages which indicate how all signal heads at the current intersection are currently represented. Non-instrumented intersections can be created for discovery purpose, but will not allow for updates to status."
+    description: "Describes a collection of signal heads facing a specific direction/mount type. Their state is also known as a PHASE in traffic control systems."
     required:
     - "id"
     properties:
       id:
         type: "string"
+        description: "An ID number identifying this signal set"
       uri:
         type: "string"
+        description: "The URI which can be used to access this signal set directly"
       name: 
         type: "string"
+        description: "A text based description of the signal"
+      url:
+        type: "string"
+        description: "A url with more information about this specific signal"
       longitude:
         type: "number" 
+        description: "The longitude of the centroid of the signal set"
       latitude:
         type: "number"
-      style:
-        type: "string"
-        enum: [fourway, straight, left, right, up, down, ramp]
-      instrument: #Revisit this, attempt to handle non-instrumented and instrumented intersections.
-        type: "string"  
-        enum: [singal, yeild, stop]
-      state:
-        type: "string" 
-        enum: [hold, omit, blink, force_off]
-      phases:
-        type: "array"
-        items:
-          $ref: "#/definitions/Phase"
-      stages:
-        type: "array"
-        items:
-          $ref: "#/definitions/Stage"
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"
-  Railcrossing:
-    type: "object"
-    description: "Describes a railcrossing within the facility. Non-instrumented railcrossings can be created for discovery purposes, but will not allow for updates to status."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-      uri:
-        type: "string"
-      name: 
-        type: "string"
-      longitude:
-        type: "number" 
-      latitude:
-        type: "number"
+        description: "The latitude of the centroid of the signal set"
       instrument:
         type: "string"
-        enum: [gated, signal, none]
-      state: #TODO: Do we know or want to include timing?
+        enum: [light]
+        nullable: true
+        description: "The signal type"
+      directionFacing:
+        type: "string"
+        enum: [north, east, south, west]
+        description: "The direction the signal head is facing"
+      directionTraffic:
+        type: "string"
+        enum: [north, east, south, west]
+        description: "The direction of traffic this signal controls."
+      orientation:
+        type: "string"
+        description: "Describes the mounting orientation of the signal heads"
+        enum: [horizontal, vertical]
+      height:
+        type: "number"
+        description: "Height of signal head to road surface in facility units."
+        nullable: true
+      pole:
+        type: "boolean"
+        description: "Is signal mounted to a side pole."
+      mast:
+        type: "boolean"
+        description: "Is signal mounted to a mast off the pole pole."
+      mastAngle:
+        type: "boolean"
+        description: "Is mast angled off the pole"
+      wire:
+        type: "boolean"
+        description: "Is the signal mounted by wire to the mast or pole"
+      left:
+        type: "boolean"
+        descirption: "This signal set has a signal pointing in this direction"
+      right:
+        type: "boolean"
+        descirption: "This signal set has a signal pointing in this direction"
+      straight:
+        type: "boolean"
+        descirption: "This signal set has a signal pointing in this direction"
+      state:
+        type: "object"
+        description: "The current state of the signal set"
+        properties:
+          left:
+            type: "object"
+            description: "The current state left turn signal if present"
+            nullable: true
+            properties:
+              color:
+                type: "string"
+                description: "Color of signal if active"
+                nullable: true
+                enum: [red, yellow, green]
+              status:
+                type: "string"
+                description: "Light status"
+                enum: [steady, flashing, disabled]
+              timeMin:
+                type: "number"
+                description: "Minimum time (seconds) until next phase."
+              timeMax:
+                type: "number"
+                description: "Maximum time (seconds) until next phase."
+              updated:
+                description: "The last time the status of this signal was updated"
+                type: "string"
+                format: "date-time"
+          right:
+            type: "object"
+            description: "The current state right turn signal if present"
+            nullable: true
+            properties:
+              color:
+                type: "string"
+                description: "Color of signal if active"
+                nullable: true
+                enum: [red, yellow, green]
+              status:
+                type: "string"
+                description: "Light status"
+                enum: [steady, flashing, disabled]
+              timeMin:
+                type: "number"
+                description: "Minimum time (seconds) until next phase."
+              timeMax:
+                type: "number"
+                description: "Maximum time (seconds) until next phase."
+              updated:
+                description: "The last time the status of this signal was updated"
+                type: "string"
+                format: "date-time"
+          straight:
+            type: "object"
+            description: "The current state straight signal if present"
+            nullable: true
+            properties:
+              color:
+                type: "string"
+                description: "Color of signal if active"
+                enum: [red, yellow, green]
+                nullable: true
+              status:
+                type: "string"
+                description: "Light status"
+                enum: [steady, flashing, disabled]
+              timeMin:
+                type: "number"
+                description: "Minimum time (seconds) until next phase."
+              timeMax:
+                type: "number"
+                description: "Maximum time (seconds) until next phase."
+              updated:
+                description: "The last time the status of this signal was updated"
+                type: "string"
+                format: "date-time"
+  Intersection:
+    type: "object"
+    description: "Intersections can be collections of traffic devices such as signals, signs, and crosswalks in multiple directions."
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+        description: "An ID number identifying this intersection"        
+      uri:
+        type: "string"
+        description: "The URI which can be used to access this signal set directly"
+      name: 
+        type: "string"
+        description: "A text based description of the signal"
+      url:
+        type: "string"
+        description: "A url with more information about this specific intersection"
+      longitude:
+        type: "number"
+        description: "The longitude of the centroid of the signal set"
+      latitude:
+        type: "number"
+        description: "The latitude of the centroid of the signal set"
+      instrument:
+        type: "string"  
+        enum: [signal, stop, yeild, ramp]
+        description: "The intersection instrument type"
+      style:
+        type: "string"
+        enum: [straight, three-way, four-way]
+        description: "Describes the number of road segments entering the intersection"
+      streetMain:
+        type: "string"
+        example: "Main Street"
+        description: "The name of the steet which is considered to be the main street by the traffic controller"
+      streetCross:
         type: "string" 
-        enum: [preflash, closing, closed, opening, open, postflash]
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"        
+        example: "Cross Street"
+        description: "The name of the second street which is considered the cross street by the traffic controller"
+      signals:
+        type: "array"
+        description: "A list of signals controlled by this intersection"
+        items:
+          $ref: "#/definitions/Signal"
+      crosswalks:
+        type: "array"
+        description: "A list of crosswalks that are part of this intersection."
+        items:
+          $ref: "#/definitions/Crosswalk"
+      state:
+        type: "object"
+        description: "The current state of the intersection"
+        properties:
+          updated:
+            description: "The last time the status of this rail crossing was updated"
+            type: "string"
+            format: "date-time"
+          timePaused:
+            description: "Is the countdown timer between phase changes for this intersection paused?"
+            type: "boolean"
+          timeClearControl:
+            description: "Time duration between control requests for automatic control clearing at intersection. Also known as NTCIP Backup Time."
+            type: "integer"
+          phases:
+            type: array
+            description: "Status for each phase at time of last update"
+            items:
+              type: object
+              properties:
+                phase:
+                  type: "integer"
+                  description: "Phase ID number"
+                callVehicle:
+                  type: "boolean"
+                  description: "A vehicle call has been placed for this phase."
+                callPedestrian:
+                  type: "boolean"
+                  description: "A pedestrian call has been placed for this phase."
+                omit:
+                  type: "boolean"
+                  description: "An omit has been placed for this phase."
+                omitPedestrian:
+                  type: "boolean"
+                  description: "A pedestrian omit has been placed for this phase."
+                hold:
+                  type: "boolean"
+                  description: "A hold has been placed for this phase."
+                forceOff:
+                  type: "boolean"
+                  description: "This phase has a force off active"
+                pedestrianClear:
+                  type: "boolean"
+                  description: "Pedestrian clear is active"
+                walkDont:
+                  type: "boolean"
+                  description: "DONT WALK sign is active"
+                walk:
+                  type: "boolean"
+                  description: "WALK sign is active"              
+    
+  Railcrossing:
+    type: "object"
+    description: "Describes a rail crossing within the facility. Non-instrumented crossings reject control requests."
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+        description: "An ID number identifying this crosswalk"
+      uri:
+        type: "string"
+        description: "The URI which can be used to access this rail crossing directly"
+      name: 
+        type: "string"
+        description: "A text based description of the rail crossing"
+      url:
+        type: "string"
+        description: "A url with more information about this specific rail crossing"
+      longitude:
+        type: "number" 
+        description: "The longitude of the centroid of the rail crossing"
+      latitude:
+        type: "number"
+        description: "The latitude of the centroid of the rail crossing"
+      instrument:
+        type: "string"
+        enum: [crossbuck]
+        nullable: true
+        description: "The signal type of rail crossing"
+      audible:
+        type: "boolean"
+        description: "Is the rail crossing equipped with an audible warning"
+      gate:
+        type: "boolean"
+        description: "Is the rail crossing equipped with a gate"
+      beacon: 
+        type: "string"
+        enum: [wig-wag, flashing]
+        nullable: true
+        description: "The beacon type used for this rail crossing"
+      phases: 
+        type: array
+        description: "A list of supported phases"
+        nullable: true
+        items:
+          type: string
+          enum: [preflash, closing, opening, postflash]
+      state:
+        type: "object"
+        description: "The current state of the rail crossing"
+        properties:
+          manualCall:
+            type: "boolean"
+            description: "Manual activation call placed, but has not been serviced."
+          activated:
+            type: "boolean"
+            description: "Is the rail crossing cycle activated"
+          phase:
+            type: "string"
+            descirption: "The current phase of the rail crossing if instrumented"
+            enum: [preflash, closing, opening, postflash]
+            nullable: true
+          gate:
+            type: "boolean"
+            description: "True if the gate is down/in motion."            
+          audible:
+            type: "boolean"
+            description: "True if audible tone is activated."
+          beacon:
+            type: "boolean"
+            description: "True if beacon is activated."
+          updated:
+            description: "The last time the status of this rail crossing was updated"
+            type: "string"
+            format: "date-time"
   Crosswalk:
     type: "object"
     description: "Describes a crosswalk within the facility. Non-instrumented crosswalks can be created for discovery purposes, but will not allow for updates to status."
@@ -3624,28 +1171,80 @@ definitions:
     properties:
       id:
         type: "string"
+        description: "An ID number identifying this crosswalk"
       uri:
         type: "string"
+        description: "The URI which can be used to access this crosswalk directly"
       name: 
         type: "string"
+        description: "A text based description of this crosswalk"
+      url:
+        type: "string"
+        description: "A url with more information about this specific crosswalk"
       longitude:
         type: "number" 
+        description: "The longitude of the centroid of the crosswalk"
       latitude:
         type: "number"
+        description: "The latitude of the centroid of the crosswalk"
       instrument:
         type: "string"
         enum: [solid, standard, continental, dashed, ladder, zebra, scramble, uk-pelican, uk-puffin, uk-toucan, uk-pegasus]
+        description: "The painted line pattern for this crosswalk"
       refuge:
         type: "boolean"
-        enum: [true, false]
-      beacon: #TODO: How to handle?beacon state? upraised hand, walking, walk, don't walk, falshing, count down?Maybe a beacon type and a state for the current beacon/timing?
+        description: "Does the crosswalk have a central island pedestrian refuge"
+      beacon:
         type: "string"
-        enum: [phb, belisha, signal]
+        enum: [phb, belisha, signal, rapid-flash]
+        nullable: true
+        description: "The beacon type used for this crosswalk"
+      phases: 
+        type: array
+        description: "A list of valid phases for the crosswalk if equipped with a graphical display"
+        nullable: true
+        items:
+          type: string
+          enum: [walk-text, do-not-walk-text, steady-upraised-hand, steady-walking-man, flashing-upraised-hand]
+      countdown:
+        type: "boolean"
+        description: "Does the crosswalk feature an instrumented phase timer"
       audible:
         type: "boolean"
-        enum: [true, false]
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"    
+        description: "Is the crosswalk equipped with an audible warning for the crossing/countdown"
+      visor:
+        type: "string"
+        description: "The type of visor installed on the beacon"
+        nullable: true
+        enum: [egg-crate, tunnel, cap]
+      call-button:
+        type: "boolean"
+        description: "Can a pedestrian place a call or trigger this crosswalk with a button"
+      tactile-surface:
+        type: "boolean"
+        descirption: "Does the entrance to the crosswalk feature a tactile surface"
+      state:
+        type: "object"
+        description: "The current state of the crosswalk"
+        properties:
+          pedestrianCall:
+            type: "boolean"
+            description: "Pedestrian call placed, but has not been serviced."
+          activated:
+            type: "boolean"
+            description: "Is the crosswalk activated?"
+          phase:
+            type: "string"
+            descirption: "The current phase of the crosswalk if instrumented"
+            enum: [walk-text, do-not-walk-text, steady-upraised-hand, steady-walking-man, flashing-upraised-hand]
+            nullable: true
+          countdownTime: 
+            description: "The time remaining in this crosswalk phase if instrumented."
+            type: "integer"
+          updated:
+            description: "The last time the status of this crosswalk was updated"
+            type: "string"
+            format: "date-time"
   Gate:
     type: "object"
     description: "Describes a gate within the facility. Non-instrumented gates can be created for discovery purposes, but will not allow for updates to status."
@@ -3654,324 +1253,122 @@ definitions:
     properties:
       id:
         type: "string"
+        description: "An ID number identifying this gate"
       uri:
         type: "string"
+        description: "The URI which can be used to access this gate directly"
       name: 
         type: "string"
+        description: "A text based description of this gate"
+      url:
+        type: "string"
+        description: "A url with more information about this specific gate"
       longitude:
         type: "number" 
+        description: "The longitude of the centroid of the gate"
       latitude:
         type: "number"
-      instrument:
-        type: "string"
-        enum: [manual, slide, arm, baby]
-      state:
-        type: "string"
-        enum: [unknown, open, closed, opening, closing]
-      audible: #Does gate have alarm?
+        description: "The latitude of the centroid of the gate"
+      electric:
         type: "boolean"
-        enum: [true, false]
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"
-  Weather:
-    type: "object"
-    description: "Describes a weather event at a location within the facility. Non-instrumented weather can also be enumerated for discovery purposes, but generally does not allow for updates."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-      uri:
-        type: "string"
-      name: 
-        type: "string"
-      longitude:
-        type: "number" 
-      latitude:
-        type: "number"
-      type:
-        type: "string"
-        enum: [rain, fog, wind, snow, heater, alert, warning]
-      state:
+        description: "Is this a manual or electric gate"
+      arm:
         type: "boolean"
-        enum: [true, false]
-      measurement:
-        type: "number"
-      units:
-        type: "string"
-        enum: ["m/h","cm/h","mm/hr"]
-      expiry_Time:
-        type: "string"
-        format: "DateTime"
-  Robot:
-    type: "object"
-    description: "Describes a facility robot."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-      uri:
-        type: "string"
-      name: 
-        type: "string"
-      model:
-        type: "string"
-      manufacturer:
-        type: "string"
-      revision:
-        type: "string"
-      longitude:
-        type: "number" 
-      latitude:
-        type: "number"
-      type:
-        type: "string"
-        enum: [pedestrian, bicycle, animal, rail, spherical, choppa, roomba, toaster, droid]
-      state:
+        description: "Does this gate have an arm"
+      slide:
         type: "boolean"
-        enum: [true, false]
-      documentation_uri:
-        type: "string"
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"
-  Sensor:
-    type: "object"
-    description: "Describes a facility sensor. Sensors can be instrumented to control devices, or allow for triggers within API usage."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-      uri:
-        type: "string"
-      name: 
-        type: "string"
-      model:
-        type: "string"
-      manufacturer:
-        type: "string"
-      revision:
-        type: "string"
-      longitude:
-        type: "number" 
-      latitude:
-        type: "number"
-      type:
-        type: "string"
-        enum: [camera, button, tripwire, lidar, radar, temperature, motion]
-      state:
-        type: "string"
-        enum: [enabled, disabled, waiting, triggered]
-      documentation_uri:
-        type: "string"
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"
-  MaintenanceEquipment:
-    type: "object"
-    description: "Describes a piece of facility maintenance equipment."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-      uri:
-        type: "string"
-      name: 
-        type: "string"
-      model:
-        type: "string"
-      manufacturer:
-        type: "string"
-      revision:
-        type: "string"
-      longitude:
-        type: "number" 
-      latitude:
-        type: "number"
-      type:
-        type: "string"
-        enum: [barrel, cone, arrowboard, sign, barricade, curbing, spikestrip]
-      state:
-        type: "string"
-        enum: [enabled, flashing, disabled]
-      message:
-        type: "string"
-      documentation_uri:
-        type: "string"
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"
-  Lighting:
-    type: "object"
-    description: "Describes a light within the facility."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-      uri:
-        type: "string"
-      name: 
-        type: "string"
-      model:
-        type: "string"
-      manufacturer:
-        type: "string"
-      revision:
-        type: "string"
-      longitude:
-        type: "number" 
-      latitude:
-        type: "number"
-      type:
-        type: "string"
-        enum: [arc, incandescent, fluorescent, mercury_vapor, sodium, halide, induction, cfl, gas, led]
-      state:
-        type: "string"
-        enum: [enabled, disabled]
-      brightness_percent:
-        type: "integer"
-        format: "int8"
-      documentation_uri:
-        type: "string"
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"
-  Traffic:
-    type: "object"
-    description: "Describes simulated traffic within the facility."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-      uri:
-        type: "string"
-      name: 
-        type: "string"
-      longitude:
-        type: "number" 
-      latitude:
-        type: "number"
-      heading:
-        type: "number" 
-      velocity:
-        type: "number"
-      type:
-        type: "string"
-        enum: [car, truck, maitenance, emergegency]
-      bounds:
-        type: "array"
-        items:
-          type: "number"
-      path:
-        type: "array"
-        items:
-          type: "number"
-      state:
-        type: "string"
-        enum: [enabled, disabled]
-      documentation_uri:
-        type: "string"
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"
-  Simulation: #TODO: Need to add event list or language in the future.
-    type: "object"
-    description: "Describes a test within the facility."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-      uri:
-        type: "string"
-      name: 
-        type: "string"
-      description:
-        type: "string"
-      simulation_format:
-        type: "string"
-        enum: [MCITY, RIGHTHOOK, VYRES]
-      validated:
+        description: "Does this gate slide to the side?"
+      swing:
         type: "boolean"
-        enum: [true, false]
-      facility_specific:
+        description: "Gate swings horizontally to open" 
+      lift:
         type: "boolean"
-        enum: [true, false]
+        description: "Gate lifts to open"
+      audible:
+        type: "boolean"
+        description: "Gate has an audible alarm"
       state:
-        type: "string"
-        enum: [running, stopped, error, cancelled, notstarted, paused]
-      events:
         type: "object"
-      last_error:
-        type: "string"
-      documentation_uri:
-        type: "string"
-      v2x:
-        $ref: "#/definitions/V2X_Configuration"
-  Segment: #TODO: how to handle crosswalks connected to intersections?
+        description: "The current state of the gate"
+        properties:
+          gateCall:
+            type: "boolean"
+            description: "Gate open requested, but has not been serviced."
+          activated:
+            type: "boolean"
+            description: "Gate in motion"
+          open:
+            type: "boolean"
+            description: "Is the gate open?"
+            nullable: true
+          updated:
+            description: "The last time the status of this gate was updated"
+            type: "string"
+            format: "date-time"
+  Facility:
     type: "object"
-    description: "Describes a road segment configured of multiple objects, the grouping is done via physical location. Shape is represented by using GeoJSON RFC7946"
+    description: "Describes the facility."
     required:
     - "id"
     properties:
       id:
         type: "string"
+        description: "An ID number identifying this Facility"
       uri:
         type: "string"
+        description: "The URI which can be used to access this facility directly"
       name: 
         type: "string"
+        description: "A text based description of this facility"
+      url:
+        type: "string"
+        description: "A url with more information about this specific gate"
+      urlMap:
+        type: "string"
+        description: "A url with to a facility map"
       longitude:
-        type: "number"
+        type: "number" 
+        description: "The longitude of the centroid of the facility"
       latitude:
         type: "number"
-      geometry:        
-        type: "array"
-        items:
-          $ref: "#/definitions/GeometryCollection"
-      intersections:
-        type: "array"
-        items:
-          $ref: "#/definitions/Intersection"
-      crosswalk:
-        type: "array"
-        items:
-          $ref: "#/definitions/Crosswalk"
-      gate:
-        type: "array"
-        items:
-          $ref: "#/definitions/Gate"
-      weather:
-        type: "array"
-        items:
-          $ref: "#/definitions/Weather"
-      robot:
-        type: "array"
-        items:
-          $ref: "#/definitions/Robot"
-      maintenance:
-        type: "array"
-        items:
-          $ref: "#/definitions/MaintenanceEquipment"
-      lighting:
-        type: "array"
-        items:
-          $ref: "#/definitions/Lighting"
-      traffic:
-        type: "array"
-        items:
-          $ref: "#/definitions/Traffic"
-
-          
-  ApiResponse:
+        description: "The latitude of the centroid of the facility"
+      contactMaintenance: 
+        type: "string"
+        description: "Facility Maintenance contact"
+      contactReservations: 
+        type: "string"
+        description: "Facility Reservation Contact"
+      contactManager: 
+        type: "string"
+        description: "Facility Manager Contact"
+      contactTechnical: 
+        type: "string"
+        description: "Facility Technical Contact"
+      contactEmergency: 
+        type: "string"
+        description: "Facility Emergency Contact"
+      unitDistance:
+        type: "string"
+        description: "Facility Unit for Distance"
+      unitMass:
+        type: "string"
+        description: "Facility Unit for Mass"
+  APIError:
     type: "object"
     properties:
-      code:
+      internal_code:
         type: "integer"
         format: "int32"
-      type:
-        type: "string"
+        description: 'The internal error code encountered by the API'
+      status:
+        type: "integer"
+        description: "The HTTP error code returned with this error object."
       message:
         type: "string"
+        description: "The error message encountered"
+      human_message:
+        type: "string"
+        description: "A human readable HTTP error code"
 externalDocs:
   description: "Mcity website"
   url: "https://mcity.umich.edu"
