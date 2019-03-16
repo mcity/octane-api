@@ -1,1374 +1,1686 @@
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  description: "Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous and connected vehicle test facilities."
-  version: "0.0.1"
-  title: "Mcity Control API"
+  description: Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous
+    and connected vehicle test facilities.
+  version: 0.0.2
+  title: Mcity Control API
   contact:
-    name: "API support"
-    email: "mcity-engineering@umich.edu"
+    name: API support
+    email: mcity-engineering@umich.edu
   license:
-    name: "MIT License"
-    url: "https://opensource.org/licenses/MIT"
-basePath: "/api/"
-securityDefinitions:
-   # X-API-Key: abcdef12345
-   APIKeyHeader:
-     type: "apiKey"
-     description: "Tokens that expire sent to users to utilize the API"
-     in: "header"
-     name: "X-API-KEY"
-   APISharedKeyHeader:
-     type: "apiKey"
-     description: "Preshared keys used for management functions and callbacks"
-     in: "header"
-     name: "X-SHARED-KEY"
-security: #Apply securtity to all methods.
-- APIKeyHeader: []
-responses:
-    UnauthorizedError:
-      description: "Authorization Error - API key is missing or invalid"
-      schema:
-        $ref: "#/definitions/APIError"
-    ConflictsError:
-      description: "ID was specified, but object already exists with that ID."
-      schema:
-        $ref: "#/definitions/APIError"
-    PoorFormError:
-      description: "Request to this endpoint was not appropriately formed."
-      schema:
-        $ref: "#/definitions/APIError"
-    NotFoundError:
-      description: "Requested ID does not exist."
-      schema:
-        $ref: "#/definitions/APIError"
-    TeapotError:
-      description: "Request to create/modify Teapot, but I am already a teapot."
-      schema:
-        $ref: "#/definitions/APIError"
-    NotAllowedError:
-      description: "Request was denied because resource does not support this action, or the action results in an invalid state."
-      schema:
-        $ref: "#/definitions/APIError"
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+security:
+  - APIKeyHeader:
+      []
 tags:
-- name: "Facility"
-  description: "Information about the facility"
-  externalDocs: 
-    description: "Discover Mcity"
-    url: "http://mcity.umich.edu"
-- name: "Intersections"
-  description: "Management of intersections"
-  externalDocs:
-    description: "Discover Mcity's intersections"
-    url: "http://members.um.city/track/intersections"
-- name: "Signals"
-  description: "Management of traffic signals"
-  externalDocs: 
-    description: "Discover Mcity's traffic signals"
-    url: "http://members.um.city/track/signals"  
-- name: "Rail"
-  description: "Management of rail crossings."
-  externalDocs: 
-    description: "Discover Mcity's rail service"
-    url: "http://members.um.city/track/rail"
-- name: "Crosswalks"
-  description: "Management of crosswalks"
-  externalDocs: 
-    description: "Discover Mcity's crosswalks"
-    url: "http://members.um.city/track/crosswalks"
-- name: "Gates"
-  description: "Control of facility gates"
-  externalDocs: 
-    description: "Discover Mcity's gates"
-    url: "http://members.um.city/track/gates"
-- name: "WebSockets"
-  description: "Allows websocket subscription to namespaces for facility updates. Websockets are not supported within Swagger."
-  externalDocs:
-    description: "Socket.io documentation"
-    url: "https://socket.io/"
-- name: "Management"
-  description: "Functions reserved for facility administration and system processes."
-  externalDocs:
-    description: "The Mcity API system process."
-    url: "https://mcity.umich.edu/"
+  - name: Facility
+    description: Information about the facility
+    externalDocs:
+      description: Discover Mcity
+      url: http://mcity.umich.edu
+  - name: Intersections
+    description: Management of intersections
+    externalDocs:
+      description: Discover Mcity's intersections
+      url: http://members.um.city/track/intersections
+  - name: Signals
+    description: Management of traffic signals
+    externalDocs:
+      description: Discover Mcity's traffic signals
+      url: http://members.um.city/track/signals
+  - name: Rail
+    description: Management of rail crossings.
+    externalDocs:
+      description: Discover Mcity's rail service
+      url: http://members.um.city/track/rail
+  - name: Crosswalks
+    description: Management of crosswalks
+    externalDocs:
+      description: Discover Mcity's crosswalks
+      url: http://members.um.city/track/crosswalks
+  - name: Gates
+    description: Control of facility gates
+    externalDocs:
+      description: Discover Mcity's gates
+      url: http://members.um.city/track/gates
+  - name: WebSockets
+    description: Allows Socket.IO websocket subscription to namespaces for facility updates.
+      Websocket testing is not supported within this UI.
+    externalDocs:
+      description: Socket.io documentation
+      url: https://socket.io/
+  - name: Management
+    description: Functions reserved for facility administration and system processes.
+    externalDocs:
+      description: The Mcity API system process.
+      url: https://mcity.umich.edu/
 paths:
   /intersections:
     get:
       tags:
-      - "Intersections"
-      summary: "Return a list of intersection objects."
-      produces:
-      - "application/json"
+        - Intersections
+      summary: Return a list of intersection objects.
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Intersection"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"   
-  /intersection/{id}:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Intersection"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  "/intersection/{id}":
     parameters:
-        - in: path
-          name: id
-          required: true
+      - in: path
+        name: id
+        required: true
+        description: An intersection ID string.
+        schema:
           type: string
           minimum: 1
-          description: An intersection ID string.
     get:
       tags:
-      - "Intersections"
-      summary: "Return an intersection object with the specified ID."
-      produces:
-      - "application/json"
+        - Intersections
+      summary: Return an intersection object with the specified ID.
       responses:
-        200:
-          $ref: "#/definitions/Intersection"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"  
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Intersection"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
     patch:
       tags:
-      - "Intersections"
-      summary: "Allows control one to many phases within an intersection."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "intersection"
-        in: body
-        schema:
-          type: "object"
-          properties:
-            state:
-              description: "All values are bitstrings presenting phases 1-8 in descending order. Phase 1 and 6: 00100001"
-              type: "object"
+        - Intersections
+      summary: Allows control one to many phases within an intersection.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
               properties:
-                omit:
-                  type: "string"
-                  description: "Omit specified phases. A bitstring representing request for all 8 phases in descending order."
-                  example: "00100001" 
-                hold:
-                  type: "string"
-                  description: "Hold specified phases. A bitstring representing request for all 8 phases in descending order."
-                  example: "01000010"
-                forceOff:
-                  type: "string"
-                  description: "Force off specified phases. A bitstring representing request for all 8 phases in descending order."
-                  example: "00100010"
-                omitPedestrian:
-                  type: "string"
-                  description: "Omit pedestrain call for specified phases. A bitstring representing 8 phases in descending order."
-                  example: "00010001"
-                callVehicle:
-                  type: "string"
-                  description: "A vehicle call will be placed on specified phases. A bitstring representing 8 phases in descending order."
-                  example: "00010001"
-                callPedestrian:
-                  type: "string"
-                  description: "A pedestrian call will be placed on specified phases. 8 phases in descending order."
-                  example: "10001001"  
-                reset:
-                  type: "boolean"
-                  description: "Request a reset of the timing on this traffic controller. Reset is performed before other items in this request."
-                flash:
-                  type: "boolean"
-                  description: "Toggles the intersection between an all way flash and a free timed mode."
-                timePaused:
-                  type: "boolean"
-                  description: "Pause or unpause ring time of this intersection. Causes all lights to freeze in current state."
-                timeClearControl:
-                  type: "integer"
-                  description: "Default is 0 - disabled. Changing this per traffic controller causes control commands to be cleared after input number of seconds."                  
+                state:
+                  description: "All values are bit strings presenting phases 1-8 in
+                    descending order. Phase 1 and 6: 00100001"
+                  type: object
+                  properties:
+                    omit:
+                      type: string
+                      description: Omit specified phases. A bit string representing request
+                        for all 8 phases in descending order.
+                      example: "00100001"
+                    hold:
+                      type: string
+                      description: Hold specified phases green. A bit string representing
+                        request for all 8 phases in descending order.
+                      example: "01000010"
+                    forceOff:
+                      type: string
+                      description: Force off specified phases. A bit string representing
+                        request for all 8 phases in descending order.
+                      example: "00100010"
+                    omitPedestrian:
+                      type: string
+                      description: Omit pedestrian call for specified phases. A bit string
+                        representing 8 phases in descending order.
+                      example: "00010001"
+                    callVehicle:
+                      type: string
+                      description: A vehicle call will be placed on specified phases. A
+                        bit string representing 8 phases in descending order.
+                      example: "00010001"
+                    callPedestrian:
+                      type: string
+                      description: A pedestrian call will be placed on specified phases. 8
+                        phases in descending order.
+                      example: "10001001"
+                    reset:
+                      type: boolean
+                      description: Request a reset of the timing on this traffic
+                        controller. Reset is performed before other items in
+                        this request.
+                    flash:
+                      type: boolean
+                      description: Toggles the intersection between an all way flash and a
+                        free timed mode.
+                    timePaused:
+                      type: boolean
+                      description: Pause or un-pause ring time of this intersection. Causes
+                        all lights to freeze in current state.
+                    timeClearControl:
+                      type: integer
+                      description: Default is 0 - disabled. Changing this per traffic
+                        controller causes control commands to be cleared after
+                        input number of seconds.
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            properties:
-              requestID:
-                type: "string"
-                description: "Work request ID."
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"  
-  /intersection/{id}/phases:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+  "/intersection/{id}/phases":
     parameters:
-        - in: path
-          name: id
-          required: true
+      - in: path
+        name: id
+        required: true
+        description: An intersection ID string.
+        schema:
           type: integer
           minimum: 1
-          description: An intersection ID string.
     get:
-      summary: "Return list of phases configured for an intersection"
+      summary: Return list of phases configured for an intersection
       tags:
-      - "Intersections"
-      produces:
-      - "application/json"
+        - Intersections
       responses:
-        200:
-          $ref: "#/definitions/Phase"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"   
-  /intersection/{id}/signals:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of phases for this intersection
+                items:
+                  $ref: "#/components/schemas/Phase"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+  "/intersection/{id}/signals":
     parameters:
-        - in: path
-          name: id
-          required: true
+      - in: path
+        name: id
+        required: true
+        description: An intersection ID string.
+        schema:
           type: integer
           minimum: 1
-          description: An intersection ID string.
     get:
-      summary: "Return list of traffic signal configured for an intersection"
+      summary: Return list of traffic signal configured for an intersection
       tags:
-      - "Intersections"
-      produces:
-      - "application/json"
+        - Intersections
       responses:
-        200:
-          $ref: "#/definitions/Signal"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"
-  /intersection/{id}/stages:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of signals for this intersection
+                items:
+                  $ref: "#/components/schemas/Signal"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+  "/intersection/{id}/crosswalks":
     parameters:
-        - in: path
-          name: id
-          required: true
+      - in: path
+        name: id
+        required: true
+        description: An intersection ID string.
+        schema:
           type: integer
           minimum: 1
-          description: An intersection ID string.
     get:
-      summary: "Return list of suggested control groupings for the intersection (stages)"
+      summary: Return list of crosswalks within an intersection
       tags:
-      - "Intersections"
-      produces:
-      - "application/json"
+        - Intersections
       responses:
-        200:
-          $ref: "#/definitions/Stage"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"     
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of crosswalks within this intersection
+                items:
+                  $ref: "#/components/schemas/Crosswalk"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+  "/intersection/{id}/stages":
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: An intersection ID string.
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      summary: Return list of suggested control groupings for the intersection (stages)
+      tags:
+        - Intersections
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of phases for this intersection
+                items:
+                  $ref: "#/components/schemas/Stage"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
   /intersections/socket/updates:
     get:
       tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all intersections in Mcity"
+        - WebSockets
+      summary: Web Socket endpoint that emits current state of all intersections in
+        Mcity
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Intersection"        
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Intersection"
   /intersections/socket/phases:
     get:
       tags:
-      - "WebSockets"
-      summary: "WebSocket endpoint that emits current state of all phases in Mcity"
+        - WebSockets
+      summary: WebSocket endpoint that emits current state of all phases in Mcity
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Intersection"
-##Signal
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Intersection"
   /signals:
     get:
       tags:
-      - "Signals"
-      summary: "Return a list of signal objects describing all instrumented crossings within the facility."
-      produces:
-      - "application/json"
+        - Signals
+      summary: Return a list of signal objects describing all instrumented signals
+        within the facility.
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Signal"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"   
-  /signal/{id}:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Signal"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  "/signal/{id}":
     parameters:
-        - in: path
-          name: id
-          required: true
+      - in: path
+        name: id
+        required: true
+        description: A signal ID string.
+        schema:
           type: string
           minimum: 1
-          description: A signal ID string.
     get:
       tags:
-      - "Signals"
-      summary: "Return an signal object with the specified ID."
-      produces:
-      - "application/json"
+        - Signals
+      summary: Return an signal object with the specified ID.
       responses:
-        200:
-          $ref: "#/definitions/Signal"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"         
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Signal"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+    patch:
+      tags:
+        - Signals
+      summary: Allows control of a single signal set.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  description: The specified object you are sending.
+                  type: object
+                  properties:
+                    reset:
+                      type: boolean
+                      description: Request a reset of the timing on this traffic
+                        controller. Reset is performed before other items in
+                        this request.
+                    flash:
+                      type: boolean
+                      description: Toggles the intersection between an all way flash and a
+                        free timed mode.
+                    left:
+                      type: object
+                      properties:
+                        color:
+                          type: string
+                          enum:
+                            - red
+                            - yellow
+                            - green
+                    right:
+                      type: object
+                      properties:
+                        color:
+                          type: string
+                          enum:
+                            - red
+                            - yellow
+                            - green
+                    straight:
+                      type: object
+                      properties:
+                        color:
+                          type: string
+                          enum:
+                            - red
+                            - yellow
+                            - green
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
   /signals/socket/updates:
     get:
       tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all signals in Mcity"
+        - WebSockets
+      summary: Web Socket endpoint that emits current state of all signals in Mcity
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Signal"
-##Railcrossing
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Signal"
   /railcrossings:
     get:
       tags:
-      - "Rail"
-      summary: "Return a list of rail crossing objects describing all instrumented crossings within the facility."
-      produces:
-      - "application/json"
+        - Rail
+      summary: Return a list of rail crossing objects describing all instrumented
+        crossings within the facility.
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Railcrossing"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"   
-
-  /railcrossing/{id}:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Railcrossing"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  "/railcrossing/{id}":
     parameters:
-        - in: path
-          name: id
-          required: true
+      - in: path
+        name: id
+        required: true
+        description: A rail crossing ID string.
+        schema:
           type: string
           minimum: 1
-          description: A rail crossing ID string.
     get:
       tags:
-      - "Rail"
-      summary: "Return an rail crossing object with the specified ID."
-      produces:
-      - "application/json"
+        - Rail
+      summary: Return an rail crossing object with the specified ID.
       responses:
-        200:
-          $ref: "#/definitions/Railcrossing"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"      
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Railcrossing"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
     patch:
       tags:
-      - "Rail"
-      summary: "Updates an existing rail crossing status, allowing for triggering. Returns request ID on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "railcrossing"
-        in: body
-        schema:
-          type: "object"
-          properties:
-            state:
-              type: "object"
+        - Rail
+      summary: Updates an existing rail crossing status, allowing for triggering.
+        Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
               properties:
-                manualCall:
-                  type: "boolean"
-                  description: "Activate rail crossing cycle"          
+                state:
+                  type: object
+                  properties:
+                    manualCall:
+                      type: boolean
+                      description: Activate rail crossing cycle
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            properties:
-              requestID:
-                type: "string"
-                description: "Work request ID."
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"          
-   
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
   /railcrossings/socket/updates:
     get:
       tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all rail crossings in Mcity"
+        - WebSockets
+      summary: Web Socket endpoint that emits current state of all rail crossings in
+        Mcity
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            items:
-              $ref: "#/definitions/Railcrossing"        
-##Crosswalks
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Railcrossing"
   /crosswalks:
     get:
       tags:
-      - "Crosswalks"
-      summary: "Return a list of crosswalk objects describing all instrumented crossings within the facility."
-      produces:
-      - "application/json"
+        - Crosswalks
+      summary: Return a list of crosswalk objects describing all instrumented crossings
+        within the facility.
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Crosswalk"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-
-  /crosswalk/{id}:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Crosswalk"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  "/crosswalk/{id}":
     parameters:
-        - in: path
-          name: id
-          required: true
+      - in: path
+        name: id
+        required: true
+        description: A crosswalk ID number.
+        schema:
           type: integer
           minimum: 1
-          description: A crosswalk ID number.
     get:
       tags:
-      - "Crosswalks"
-      summary: "Return a crosswalk object with the specified ID."
-      produces:
-      - "application/json"
+        - Crosswalks
+      summary: Return a crosswalk object with the specified ID.
       responses:
-        200:
-          $ref: "#/definitions/Crosswalk"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"        
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Crosswalk"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
     patch:
       tags:
-      - "Crosswalks"
-      summary: "Updates an existing crosswalk status, allowing for triggering. Returns request ID on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "crosswalk"
-        in: body
-        schema:
-          type: "object"
-          properties:
-            state:
-              type: "object"
+        - Crosswalks
+      summary: Updates an existing crosswalk status, allowing for triggering. Returns
+        request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
               properties:
-                pedestrianCall:
-                  type: "boolean"
-                  description: "Activate crosswalk cycle"
+                state:
+                  type: object
+                  properties:
+                    pedestrianCall:
+                      type: boolean
+                      description: Activate crosswalk cycle
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            properties:
-              requestID:
-                type: "string"
-                description: "Work request ID."
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        405:
-          $ref: "#/responses/NotAllowedError"
-        500:
-          description: "Internal server error"          
-
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "405":
+          $ref: "#/components/responses/NotAllowedError"
+        "500":
+          description: Internal server error
   /crosswalks/socket/updates:
     get:
       tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all crosswalks in Mcity"
+        - WebSockets
+      summary: Web Socket endpoint that emits current state of all crosswalks in Mcity
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Crosswalk"        
-                 
-     
-##Gates
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Crosswalk"
   /gates:
     get:
       tags:
-      - "Gates"
-      summary: "Return a list of gate objects describing all instrumented crossings within the facility."
-      produces:
-      - "application/json"
+        - Gates
+      summary: Return a list of gate objects describing all instrumented gates
+        within the facility.
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-##Gate
-  /gate/{id}:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Gate"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  "/gate/{id}":
     parameters:
-        - in: path
-          name: id
-          required: true
+      - in: path
+        name: id
+        required: true
+        description: A gate ID number.
+        schema:
           type: integer
           minimum: 1
-          description: A gate ID number.
     get:
       tags:
-      - "Gates"
-      summary: "Return a gate object with the specified ID."
-      produces:
-      - "application/json"
+        - Gates
+      summary: Return a gate object with the specified ID.
       responses:
-        200:
-          $ref: "#/definitions/Gate"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        500:
-          description: "Internal server error"        
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gate"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
     patch:
       tags:
-      - "Gates"
-      summary: "Updates an existing gate status, allowing for triggering. Returns request ID on success."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gate"
-        in: body
-        schema:
-          type: "object"
-          properties:
-            state:
-              type: "object"
+        - Gates
+      summary: Updates an existing gate status, allowing for triggering. Returns
+        request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
               properties:
-                gateCall:
-                  type: "boolean"
-                  description: "Activate gate cycle"
+                state:
+                  type: object
+                  properties:
+                    gateCall:
+                      type: boolean
+                      description: Activate gate cycle
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            properties:
-              requestID:
-                type: "string"
-                description: "Work request ID."
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
-        405:
-          $ref: "#/responses/NotAllowedError"
-        500:
-          description: "Internal server error"          
-
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "405":
+          $ref: "#/components/responses/NotAllowedError"
+        "500":
+          description: Internal server error
   /gates/socket/updates:
     get:
       tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits current state of all gates in Mcity"
+        - WebSockets
+      summary: Web Socket endpoint that emits current state of all gates in Mcity
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Gate"    
-     
-##Facility
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Gate"
   /facility:
     get:
       tags:
-      - "Facility"
-      summary: "Return information about the facility and current reservation."
-      produces:
-      - "application/json"
+        - Facility
+      summary: Return information about the facility and current reservation.
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Facility"
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Facility"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
   /facility/socket/updates:
     get:
       tags:
-      - "WebSockets"
-      summary: "Web Socket endpoint that emits Facility messages, updates, and warnings."
+        - WebSockets
+      summary: Web Socket endpoint that emits Facility messages, updates, and warnings.
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Facility"    
-
-
-##Management
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Facility"
   /management/intersections/polling:
     patch:
-      security:
-      - APISharedKeyHeader: []
       tags:
-      - "Management"
-      summary: "Reserved for Facility system processes/admin. Start/Stop Intersection Traffic signal polling."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gate"
-        in: body
-        schema:
-          type: "object"
-          properties:
-            state:
-              type: "object"
+        - Management
+      summary: "TOKEN TYPE: ADMIN. Start/Stop Intersection Traffic signal polling."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
               properties:
-                enabled:
-                  type: "boolean"
-                  description: "Starts or terminates all polling processes."
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Starts or terminates all polling processes.
+        description: Modifications to the process that controls intersection updates
       responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            properties:
-              requestID:
-                type: "string"
-                description: "Work request ID."
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
   /management/facility/reset:
     post:
       tags:
-      - "Management"
-      summary: "Reset controllable items within the facility."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gate"
-        in: body
-        schema:
-          type: "object"
-          properties:
-            state:
-              type: "object"
-              properties:
-                confirm:
-                  type: "boolean"
-                  description: "Confirms the reset of the facility."
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            properties:
-              requestID:
-                type: "string"
-                description: "Work request ID."
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
-  /management/device/callback:
-    post:
-      security:
-      - APISharedKeyHeader: []
-      tags:
-      - "Management"
-      summary: "Reserved for Facility system processes/admin. Handles callbacks from physical devices connected to API."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "gate"
-        in: body
-        schema:
-          type: "object"
-          properties:
-            data:
-              type: "string"
-              description: "Data from event"
-            event:
-              type: "string"
-              description: "Remote Event name"
-            coreid:
-              type: "string"
-              description: "Device ID of calling device"
-            published_at:
-              type: "string"
-              description: "The time this event was published."
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: "object"
-            properties:
-              requestID:
-                type: "string"
-                description: "Work request ID."
-        400:
-          $ref: "#/responses/PoorFormError"
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        500:
-          description: "Internal server error"
- 
-##Model definitions
-definitions:
-  Stage:
-    type: "object"
-    description: "Describes a suggested control grouping for an intersection. Stages are lights that work together to make non-conflicting sets of phases."
-    properties:
-      name:
-        type: "string"
-        description: "A text description of the phases controlled by this stage." 
-      controlGroup:
-        type: "integer"
-        description: "An id that can be used to hold/omit/force off linked parts of an intersection signal set."
-  Phase:
-    type: "object"
-    description: "Describes a set of one or more signal heads that are wired together, all heads will show the same indication"
-    properties:
-      number:
-        type: "integer"
-        description: "The phase number as configured on the traffic controller"
-      bound:
-        type: "string"
-        description: "The direction of traffic this phase controls. A signal with this phase would face the opposite direction."
-        enum: [north, south, east, west]
-      turn: 
-        type: "string"
-        description: "Direction of movement this signal is setup to control"
-        enum: [left, right, through]
-  Signal:
-    type: "object"
-    description: "Describes a collection of signal heads facing a specific direction/mount type. Their state is also known as a PHASE in traffic control systems."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-        description: "An ID number identifying this signal set"
-      uri:
-        type: "string"
-        description: "The URI which can be used to access this signal set directly"
-      name: 
-        type: "string"
-        description: "A text based description of the signal"
-      url:
-        type: "string"
-        description: "A url with more information about this specific signal"
-      longitude:
-        type: "number" 
-        description: "The longitude of the centroid of the signal set"
-      latitude:
-        type: "number"
-        description: "The latitude of the centroid of the signal set"
-      instrument:
-        type: "string"
-        enum: [light]
-        nullable: true
-        description: "The signal type"
-      directionFacing:
-        type: "string"
-        enum: [north, east, south, west]
-        description: "The direction the signal head is facing"
-      directionTraffic:
-        type: "string"
-        enum: [north, east, south, west]
-        description: "The direction of traffic this signal controls."
-      orientation:
-        type: "string"
-        description: "Describes the mounting orientation of the signal heads"
-        enum: [horizontal, vertical]
-      height:
-        type: "number"
-        description: "Height of signal head to road surface in facility units."
-        nullable: true
-      pole:
-        type: "boolean"
-        description: "Is signal mounted to a side pole."
-      mast:
-        type: "boolean"
-        description: "Is signal mounted to a mast off the pole pole."
-      mastAngle:
-        type: "boolean"
-        description: "Is mast angled off the pole"
-      wire:
-        type: "boolean"
-        description: "Is the signal mounted by wire to the mast or pole"
-      left:
-        type: "boolean"
-        descirption: "This signal set has a signal pointing in this direction"
-      right:
-        type: "boolean"
-        descirption: "This signal set has a signal pointing in this direction"
-      straight:
-        type: "boolean"
-        descirption: "This signal set has a signal pointing in this direction"
-      state:
-        type: "object"
-        description: "The current state of the signal set"
-        properties:
-          left:
-            type: "object"
-            description: "The current state left turn signal if present"
-            nullable: true
-            properties:
-              color:
-                type: "string"
-                description: "Color of signal if active"
-                nullable: true
-                enum: [red, yellow, green]
-              status:
-                type: "string"
-                description: "Light status"
-                enum: [steady, flashing, disabled]
-              timeMin:
-                type: "number"
-                description: "Minimum time (seconds) until next phase."
-              timeMax:
-                type: "number"
-                description: "Maximum time (seconds) until next phase."
-              updated:
-                description: "The last time the status of this signal was updated"
-                type: "string"
-                format: "date-time"
-          right:
-            type: "object"
-            description: "The current state right turn signal if present"
-            nullable: true
-            properties:
-              color:
-                type: "string"
-                description: "Color of signal if active"
-                nullable: true
-                enum: [red, yellow, green]
-              status:
-                type: "string"
-                description: "Light status"
-                enum: [steady, flashing, disabled]
-              timeMin:
-                type: "number"
-                description: "Minimum time (seconds) until next phase."
-              timeMax:
-                type: "number"
-                description: "Maximum time (seconds) until next phase."
-              updated:
-                description: "The last time the status of this signal was updated"
-                type: "string"
-                format: "date-time"
-          straight:
-            type: "object"
-            description: "The current state straight signal if present"
-            nullable: true
-            properties:
-              color:
-                type: "string"
-                description: "Color of signal if active"
-                enum: [red, yellow, green]
-                nullable: true
-              status:
-                type: "string"
-                description: "Light status"
-                enum: [steady, flashing, disabled]
-              timeMin:
-                type: "number"
-                description: "Minimum time (seconds) until next phase."
-              timeMax:
-                type: "number"
-                description: "Maximum time (seconds) until next phase."
-              updated:
-                description: "The last time the status of this signal was updated"
-                type: "string"
-                format: "date-time"
-  Intersection:
-    type: "object"
-    description: "Intersections can be collections of traffic devices such as signals, signs, and crosswalks in multiple directions."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-        description: "An ID number identifying this intersection"        
-      uri:
-        type: "string"
-        description: "The URI which can be used to access this signal set directly"
-      name: 
-        type: "string"
-        description: "A text based description of the signal"
-      url:
-        type: "string"
-        description: "A url with more information about this specific intersection"
-      longitude:
-        type: "number"
-        description: "The longitude of the centroid of the signal set"
-      latitude:
-        type: "number"
-        description: "The latitude of the centroid of the signal set"
-      instrument:
-        type: "string"  
-        enum: [signal, stop, yeild, ramp]
-        description: "The intersection instrument type"
-      style:
-        type: "string"
-        enum: [straight, three-way, four-way]
-        description: "Describes the number of road segments entering the intersection"
-      streetMain:
-        type: "string"
-        example: "Main Street"
-        description: "The name of the steet which is considered to be the main street by the traffic controller"
-      streetCross:
-        type: "string" 
-        example: "Cross Street"
-        description: "The name of the second street which is considered the cross street by the traffic controller"
-      signals:
-        type: "array"
-        description: "A list of signals controlled by this intersection"
-        items:
-          $ref: "#/definitions/Signal"
-      crosswalks:
-        type: "array"
-        description: "A list of crosswalks that are part of this intersection."
-        items:
-          $ref: "#/definitions/Crosswalk"
-      state:
-        type: "object"
-        description: "The current state of the intersection"
-        properties:
-          updated:
-            description: "The last time the status of this rail crossing was updated"
-            type: "string"
-            format: "date-time"
-          timePaused:
-            description: "Is the countdown timer between phase changes for this intersection paused?"
-            type: "boolean"
-          timeClearControl:
-            description: "Time duration between control requests for automatic control clearing at intersection. Also known as NTCIP Backup Time."
-            type: "integer"
-          phases:
-            type: array
-            description: "Status for each phase at time of last update"
-            items:
+        - Management
+      summary: "TOKEN TYPE: USER. Reset controllable items within the facility."
+      requestBody:
+        content:
+          application/json:
+            schema:
               type: object
               properties:
-                phase:
-                  type: "integer"
-                  description: "Phase ID number"
-                callVehicle:
-                  type: "boolean"
-                  description: "A vehicle call has been placed for this phase."
-                callPedestrian:
-                  type: "boolean"
-                  description: "A pedestrian call has been placed for this phase."
-                omit:
-                  type: "boolean"
-                  description: "An omit has been placed for this phase."
-                omitPedestrian:
-                  type: "boolean"
-                  description: "A pedestrian omit has been placed for this phase."
-                hold:
-                  type: "boolean"
-                  description: "A hold has been placed for this phase."
-                forceOff:
-                  type: "boolean"
-                  description: "This phase has a force off active"
-                pedestrianClear:
-                  type: "boolean"
-                  description: "Pedestrian clear is active"
-                walkDont:
-                  type: "boolean"
-                  description: "DONT WALK sign is active"
-                walk:
-                  type: "boolean"
-                  description: "WALK sign is active"              
-    
-  Railcrossing:
-    type: "object"
-    description: "Describes a rail crossing within the facility. Non-instrumented crossings reject control requests."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-        description: "An ID number identifying this crosswalk"
-      uri:
-        type: "string"
-        description: "The URI which can be used to access this rail crossing directly"
-      name: 
-        type: "string"
-        description: "A text based description of the rail crossing"
-      url:
-        type: "string"
-        description: "A url with more information about this specific rail crossing"
-      longitude:
-        type: "number" 
-        description: "The longitude of the centroid of the rail crossing"
-      latitude:
-        type: "number"
-        description: "The latitude of the centroid of the rail crossing"
-      instrument:
-        type: "string"
-        enum: [crossbuck]
-        nullable: true
-        description: "The signal type of rail crossing"
-      audible:
-        type: "boolean"
-        description: "Is the rail crossing equipped with an audible warning"
-      gate:
-        type: "boolean"
-        description: "Is the rail crossing equipped with a gate"
-      beacon: 
-        type: "string"
-        enum: [wig-wag, flashing]
-        nullable: true
-        description: "The beacon type used for this rail crossing"
-      phases: 
-        type: array
-        description: "A list of supported phases"
-        nullable: true
-        items:
-          type: string
-          enum: [preflash, closing, opening, postflash]
-      state:
-        type: "object"
-        description: "The current state of the rail crossing"
-        properties:
-          manualCall:
-            type: "boolean"
-            description: "Manual activation call placed, but has not been serviced."
-          activated:
-            type: "boolean"
-            description: "Is the rail crossing cycle activated"
-          phase:
-            type: "string"
-            descirption: "The current phase of the rail crossing if instrumented"
-            enum: [preflash, closing, opening, postflash]
-            nullable: true
-          gate:
-            type: "boolean"
-            description: "True if the gate is down/in motion."            
-          audible:
-            type: "boolean"
-            description: "True if audible tone is activated."
-          beacon:
-            type: "boolean"
-            description: "True if beacon is activated."
-          updated:
-            description: "The last time the status of this rail crossing was updated"
-            type: "string"
-            format: "date-time"
-  Crosswalk:
-    type: "object"
-    description: "Describes a crosswalk within the facility. Non-instrumented crosswalks can be created for discovery purposes, but will not allow for updates to status."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-        description: "An ID number identifying this crosswalk"
-      uri:
-        type: "string"
-        description: "The URI which can be used to access this crosswalk directly"
-      name: 
-        type: "string"
-        description: "A text based description of this crosswalk"
-      url:
-        type: "string"
-        description: "A url with more information about this specific crosswalk"
-      longitude:
-        type: "number" 
-        description: "The longitude of the centroid of the crosswalk"
-      latitude:
-        type: "number"
-        description: "The latitude of the centroid of the crosswalk"
-      instrument:
-        type: "string"
-        enum: [solid, standard, continental, dashed, ladder, zebra, scramble, uk-pelican, uk-puffin, uk-toucan, uk-pegasus]
-        description: "The painted line pattern for this crosswalk"
-      refuge:
-        type: "boolean"
-        description: "Does the crosswalk have a central island pedestrian refuge"
-      beacon:
-        type: "string"
-        enum: [phb, belisha, signal, rapid-flash]
-        nullable: true
-        description: "The beacon type used for this crosswalk"
-      phases: 
-        type: array
-        description: "A list of valid phases for the crosswalk if equipped with a graphical display"
-        nullable: true
-        items:
-          type: string
-          enum: [walk-text, do-not-walk-text, steady-upraised-hand, steady-walking-man, flashing-upraised-hand]
-      countdown:
-        type: "boolean"
-        description: "Does the crosswalk feature an instrumented phase timer"
-      audible:
-        type: "boolean"
-        description: "Is the crosswalk equipped with an audible warning for the crossing/countdown"
-      visor:
-        type: "string"
-        description: "The type of visor installed on the beacon"
-        nullable: true
-        enum: [egg-crate, tunnel, cap]
-      call-button:
-        type: "boolean"
-        description: "Can a pedestrian place a call or trigger this crosswalk with a button"
-      tactile-surface:
-        type: "boolean"
-        descirption: "Does the entrance to the crosswalk feature a tactile surface"
-      state:
-        type: "object"
-        description: "The current state of the crosswalk"
-        properties:
-          pedestrianCall:
-            type: "boolean"
-            description: "Pedestrian call placed, but has not been serviced."
-          activated:
-            type: "boolean"
-            description: "Is the crosswalk activated?"
-          phase:
-            type: "string"
-            descirption: "The current phase of the crosswalk if instrumented"
-            enum: [walk-text, do-not-walk-text, steady-upraised-hand, steady-walking-man, flashing-upraised-hand]
-            nullable: true
-          countdownTime: 
-            description: "The time remaining in this crosswalk phase if instrumented."
-            type: "integer"
-          updated:
-            description: "The last time the status of this crosswalk was updated"
-            type: "string"
-            format: "date-time"
-  Gate:
-    type: "object"
-    description: "Describes a gate within the facility. Non-instrumented gates can be created for discovery purposes, but will not allow for updates to status."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-        description: "An ID number identifying this gate"
-      uri:
-        type: "string"
-        description: "The URI which can be used to access this gate directly"
-      name: 
-        type: "string"
-        description: "A text based description of this gate"
-      url:
-        type: "string"
-        description: "A url with more information about this specific gate"
-      longitude:
-        type: "number" 
-        description: "The longitude of the centroid of the gate"
-      latitude:
-        type: "number"
-        description: "The latitude of the centroid of the gate"
-      electric:
-        type: "boolean"
-        description: "Is this a manual or electric gate"
-      arm:
-        type: "boolean"
-        description: "Does this gate have an arm"
-      slide:
-        type: "boolean"
-        description: "Does this gate slide to the side?"
-      swing:
-        type: "boolean"
-        description: "Gate swings horizontally to open" 
-      lift:
-        type: "boolean"
-        description: "Gate lifts to open"
-      audible:
-        type: "boolean"
-        description: "Gate has an audible alarm"
-      state:
-        type: "object"
-        description: "The current state of the gate"
-        properties:
-          gateCall:
-            type: "boolean"
-            description: "Gate open requested, but has not been serviced."
-          activated:
-            type: "boolean"
-            description: "Gate in motion"
-          open:
-            type: "boolean"
-            description: "Is the gate open?"
-            nullable: true
-          updated:
-            description: "The last time the status of this gate was updated"
-            type: "string"
-            format: "date-time"
-  Facility:
-    type: "object"
-    description: "Describes the facility."
-    required:
-    - "id"
-    properties:
-      id:
-        type: "string"
-        description: "An ID number identifying this Facility"
-      uri:
-        type: "string"
-        description: "The URI which can be used to access this facility directly"
-      name: 
-        type: "string"
-        description: "A text based description of this facility"
-      url:
-        type: "string"
-        description: "A url with more information about this specific gate"
-      urlMap:
-        type: "string"
-        description: "A url with to a facility map"
-      longitude:
-        type: "number" 
-        description: "The longitude of the centroid of the facility"
-      latitude:
-        type: "number"
-        description: "The latitude of the centroid of the facility"
-      contactMaintenance: 
-        type: "string"
-        description: "Facility Maintenance contact"
-      contactReservations: 
-        type: "string"
-        description: "Facility Reservation Contact"
-      contactManager: 
-        type: "string"
-        description: "Facility Manager Contact"
-      contactTechnical: 
-        type: "string"
-        description: "Facility Technical Contact"
-      contactEmergency: 
-        type: "string"
-        description: "Facility Emergency Contact"
-      unitDistance:
-        type: "string"
-        description: "Facility Unit for Distance"
-      unitMass:
-        type: "string"
-        description: "Facility Unit for Mass"
-  APIError:
-    type: "object"
-    properties:
-      internal_code:
-        type: "integer"
-        format: "int32"
-        description: 'The internal error code encountered by the API'
-      status:
-        type: "integer"
-        description: "The HTTP error code returned with this error object."
-      message:
-        type: "string"
-        description: "The error message encountered"
-      human_message:
-        type: "string"
-        description: "A human readable HTTP error code"
+                state:
+                  type: object
+                  properties:
+                    confirm:
+                      type: boolean
+                      description: Confirms the reset of the facility.
+        description: Modify the state of all devices in the facility
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  /management/device/callback:
+    post:
+      tags:
+        - Management
+      summary: "TOKEN TYPE: DEVICE. Handles callbacks from physical devices connected
+        to API."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: Data from event
+                event:
+                  type: string
+                  description: Remote Event name
+                coreid:
+                  type: string
+                  description: Device ID of calling device
+                published_at:
+                  type: string
+                  description: The time this event was published.
+        description: External devices use this to modify state of API managed device state.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  /management/token:
+    post:
+      tags:
+        - Management
+      summary: "TOKEN TYPE: TOKEN. Creates a new USER type token with API access
+        between a specific date and time."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email address of token owner.
+                desc:
+                  type: string
+                  description: Event Identifier
+                dateValid:
+                  type: string
+                  description: UTC valid date/time
+                dateExpire:
+                  type: string
+                  description: UTC expiration date/time
+        description: Request for a new token to be created
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Newly generated access token
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
 externalDocs:
-  description: "Mcity website"
-  url: "https://mcity.umich.edu"
+  description: Mcity website
+  url: https://mcity.umich.edu
+servers:
+  - url: /api/
+components:
+  responses:
+    UnauthorizedError:
+      description: Authorization Error - API key is missing or invalid
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/APIError"
+    ConflictsError:
+      description: ID was specified, but object already exists with that ID.
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/APIError"
+    PoorFormError:
+      description: Request to this endpoint was not appropriately formed.
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/APIError"
+    NotFoundError:
+      description: Requested ID does not exist.
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/APIError"
+    TeapotError:
+      description: Request to create/modify Teapot, but I am already a teapot.
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/APIError"
+    NotAllowedError:
+      description: Request was denied because resource does not support this action, or the
+        action results in an invalid state.
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/APIError"
+  securitySchemes:
+    APIKeyHeader:
+      type: apiKey
+      description: Tokens that expire sent to users to utilize the API
+      in: header
+      name: X-API-KEY
+  schemas:
+    Stage:
+      type: object
+      description: Describes a suggested control grouping for an intersection. Stages are
+        lights that work together to make non-conflicting sets of phases.
+      properties:
+        name:
+          type: string
+          description: A text description of the phases controlled by this stage.
+        controlGroup:
+          type: string
+          description: A bit string that can be used to hold/omit/force off or utilize other control functions for non-conflicting portions of an
+            intersection or signal.
+          example: "00100001"
+    Phase:
+      type: object
+      description: Describes a set of one or more signal heads that are wired together, all
+        heads will show the same indication
+      properties:
+        number:
+          type: integer
+          description: The phase number as configured on the traffic controller
+        bound:
+          type: string
+          description: The direction of traffic this phase controls. A signal with this
+            phase would face the opposite direction.
+          enum:
+            - north
+            - south
+            - east
+            - west
+        turn:
+          type: string
+          description: Direction of movement this signal is setup to control
+          enum:
+            - left
+            - right
+            - through
+    Signal:
+      type: object
+      description: Describes a collection of signal heads facing a specific direction/mount
+        type. Their state is also known as a PHASE in traffic control systems.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this signal set
+        uri:
+          type: string
+          description: The URI which can be used to access this signal set directly
+        name:
+          type: string
+          description: A text based description of the signal
+        url:
+          type: string
+          description: A url with more information about this specific signal
+        longitude:
+          type: number
+          description: The longitude of the centroid of the signal set
+        latitude:
+          type: number
+          description: The latitude of the centroid of the signal set
+        instrument:
+          type: string
+          enum:
+            - light
+          nullable: true
+          description: The signal type
+        directionFacing:
+          type: string
+          enum:
+            - north
+            - east
+            - south
+            - west
+          description: The direction the signal head is facing
+        directionTraffic:
+          type: string
+          enum:
+            - north
+            - east
+            - south
+            - west
+          description: The direction of traffic this signal controls.
+        orientation:
+          type: string
+          description: Describes the mounting orientation of the signal heads
+          enum:
+            - horizontal
+            - vertical
+        height:
+          type: number
+          description: Height of signal head to road surface in facility units.
+          nullable: true
+        pole:
+          type: boolean
+          description: Is signal mounted to a side pole.
+        mast:
+          type: boolean
+          description: Is signal mounted to a mast off the pole pole.
+        mastAngle:
+          type: boolean
+          description: Is mast angled off the pole
+        wire:
+          type: boolean
+          description: Is the signal mounted by wire to the mast or pole
+        backplate:
+          type: boolean
+          description: Does the signal have a backplate?
+        left:
+          type: boolean
+          description: This signal set has a signal pointing in this direction
+        right:
+          type: boolean
+          description: This signal set has a signal pointing in this direction
+        straight:
+          type: boolean
+          description: This signal set has a signal pointing in this direction
+        state:
+          type: object
+          description: The current state of the signal set
+          properties:
+            left:
+              type: object
+              description: The current state left turn signal if present
+              nullable: true
+              properties:
+                color:
+                  type: string
+                  description: Color of signal if active
+                  nullable: true
+                  enum:
+                    - red
+                    - yellow
+                    - green
+                status:
+                  type: string
+                  description: Light status
+                  enum:
+                    - steady
+                    - flashing
+                    - disabled
+                timeMin:
+                  type: number
+                  description: Minimum time (seconds) until next phase.
+                timeMax:
+                  type: number
+                  description: Maximum time (seconds) until next phase.
+                updated:
+                  description: The last time the status of this signal was updated
+                  type: string
+                  format: date-time
+            right:
+              type: object
+              description: The current state right turn signal if present
+              nullable: true
+              properties:
+                color:
+                  type: string
+                  description: Color of signal if active
+                  nullable: true
+                  enum:
+                    - red
+                    - yellow
+                    - green
+                status:
+                  type: string
+                  description: Light status
+                  enum:
+                    - steady
+                    - flashing
+                    - disabled
+                timeMin:
+                  type: number
+                  description: Minimum time (seconds) until next phase.
+                timeMax:
+                  type: number
+                  description: Maximum time (seconds) until next phase.
+                updated:
+                  description: The last time the status of this signal was updated
+                  type: string
+                  format: date-time
+            straight:
+              type: object
+              description: The current state straight signal if present
+              nullable: true
+              properties:
+                color:
+                  type: string
+                  description: Color of signal if active
+                  enum:
+                    - red
+                    - yellow
+                    - green
+                  nullable: true
+                status:
+                  type: string
+                  description: Light status
+                  enum:
+                    - steady
+                    - flashing
+                    - disabled
+                timeMin:
+                  type: number
+                  description: Minimum time (seconds) until next phase.
+                timeMax:
+                  type: number
+                  description: Maximum time (seconds) until next phase.
+                updated:
+                  description: The last time the status of this signal was updated
+                  type: string
+                  format: date-time
+    Intersection:
+      type: object
+      description: Intersections can be collections of traffic devices such as signals,
+        signs, and crosswalks in multiple directions.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this intersection
+        uri:
+          type: string
+          description: The URI which can be used to access this signal set directly
+        name:
+          type: string
+          description: A text based description of the signal
+        url:
+          type: string
+          description: A url with more information about this specific intersection
+        longitude:
+          type: number
+          description: The longitude of the centroid of the signal set
+        latitude:
+          type: number
+          description: The latitude of the centroid of the signal set
+        instrument:
+          type: string
+          enum:
+            - signal
+            - stop
+            - yield
+            - ramp
+          description: The intersection instrument type
+        style:
+          type: string
+          enum:
+            - straight
+            - three-way
+            - four-way
+          description: Describes the number of road segments entering the intersection
+        streetMain:
+          type: string
+          example: Main Street
+          description: The name of the street which is considered to be the main street by
+            the traffic controller
+        streetCross:
+          type: string
+          example: Cross Street
+          description: The name of the second street which is considered the cross street
+            by the traffic controller
+        state:
+          type: object
+          description: The current state of the intersection
+          properties:
+            updated:
+              description: The last time the status of this rail crossing was updated
+              type: string
+              format: date-time
+            timePaused:
+              description: Is the countdown timer between phase changes for this
+                intersection paused?
+              type: boolean
+            timeClearControl:
+              description: Time in seconds between a control requests and when the traffic controller automatically clears that request. NTCIP 1202 Backup time. Setting to 0 disables automatic clearing of controls requests at this intersection.
+              type: integer
+            callVehicle:
+              description: Active Vehicles calls placed on each phase. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
+              type: string
+              example: "00100001"
+            callPedestrian:
+              description: Active Pedestrian calls placed on each phase. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
+              type: string
+              example: "00100001"
+            omit:
+              description: Active Phase omits. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
+              type: string
+              example: "00100001"
+            hold:
+              description: Active Green holds by Phase. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
+              type: string
+              example: "00100001"
+            forceOff:
+              description: Active force off to red requests by Phase. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
+              type: string
+              example: "00100001"
+            pedestrianClear:
+              description: Pedestrian clear state active/inactive by phase. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
+              type: string
+              example: "00100001"
+            walkDont:
+              description: Don't walk activity by phase. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
+              type: string
+              example: "00100001"
+            walk:
+              description: Walk activity by phase. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
+              type: string
+              example: "00100001"
+            phases:
+              type: array
+              description: Status for each phase at time of last update
+              items:
+                type: object
+                properties:
+                  phase:
+                    type: integer
+                    description: Phase ID number
+                  callVehicle:
+                    type: boolean
+                    description: A vehicle call has been placed for this phase.
+                  callPedestrian:
+                    type: boolean
+                    description: A pedestrian call has been placed for this phase.
+                  omit:
+                    type: boolean
+                    description: An omit has been placed for this phase.
+                  omitPedestrian:
+                    type: boolean
+                    description: A pedestrian omit has been placed for this phase.
+                  hold:
+                    type: boolean
+                    description: A hold has been placed for this phase.
+                  forceOff:
+                    type: boolean
+                    description: This phase has a force off active
+                  pedestrianClear:
+                    type: boolean
+                    description: Pedestrian clear is active
+                  walkDont:
+                    type: boolean
+                    description: DONT WALK sign is active
+                  walk:
+                    type: boolean
+                    description: WALK sign is active
+    Railcrossing:
+      type: object
+      description: Describes a rail crossing within the facility. Non-instrumented
+        crossings reject control requests.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this crosswalk
+        uri:
+          type: string
+          description: The URI which can be used to access this rail crossing directly
+        name:
+          type: string
+          description: A text based description of the rail crossing
+        url:
+          type: string
+          description: A url with more information about this specific rail crossing
+        longitude:
+          type: number
+          description: The longitude of the centroid of the rail crossing
+        latitude:
+          type: number
+          description: The latitude of the centroid of the rail crossing
+        instrument:
+          type: string
+          enum:
+            - crossbuck
+          nullable: true
+          description: The signal type of rail crossing
+        audible:
+          type: boolean
+          description: Is the rail crossing equipped with an audible warning
+        gate:
+          type: boolean
+          description: Is the rail crossing equipped with a gate
+        beacon:
+          type: string
+          enum:
+            - wig-wag
+            - flashing
+          nullable: true
+          description: The beacon type used for this rail crossing
+        phases:
+          type: array
+          description: A list of supported phases
+          nullable: true
+          items:
+            type: string
+            enum:
+              - preflash
+              - closing
+              - opening
+              - postflash
+        state:
+          type: object
+          description: The current state of the rail crossing
+          properties:
+            manualCall:
+              type: boolean
+              description: Manual activation call placed, but has not been serviced.
+            activated:
+              type: boolean
+              description: Is the rail crossing cycle activated
+            phase:
+              type: string
+              description: The current phase of the rail crossing if instrumented
+              enum:
+                - preflash
+                - closing
+                - opening
+                - postflash
+              nullable: true
+            gate:
+              type: boolean
+              description: True if the gate is down/in motion.
+            audible:
+              type: boolean
+              description: True if audible tone is activated.
+            beacon:
+              type: boolean
+              description: True if beacon is activated.
+            updated:
+              description: The last time the status of this rail crossing was updated
+              type: string
+              format: date-time
+    Crosswalk:
+      type: object
+      description: Describes a crosswalk within the facility. Non-instrumented crosswalks
+        can be created for discovery purposes, but will not allow for updates to
+        status.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this crosswalk
+        uri:
+          type: string
+          description: The URI which can be used to access this crosswalk directly
+        name:
+          type: string
+          description: A text based description of this crosswalk
+        url:
+          type: string
+          description: A url with more information about this specific crosswalk
+        longitude:
+          type: number
+          description: The longitude of the centroid of the crosswalk
+        latitude:
+          type: number
+          description: The latitude of the centroid of the crosswalk
+        instrument:
+          type: string
+          enum:
+            - solid
+            - standard
+            - continental
+            - dashed
+            - ladder
+            - zebra
+            - scramble
+            - uk-pelican
+            - uk-puffin
+            - uk-toucan
+            - uk-pegasus
+          description: The painted line pattern for this crosswalk
+        refuge:
+          type: boolean
+          description: Does the crosswalk have a central island pedestrian refuge
+        beacon:
+          type: string
+          enum:
+            - phb
+            - belisha
+            - signal
+            - rapid-flash
+          nullable: true
+          description: The beacon type used for this crosswalk
+        phases:
+          type: array
+          description: A list of valid phases for the crosswalk if equipped with a
+            graphical display
+          nullable: true
+          items:
+            type: string
+            enum:
+              - walk-text
+              - do-not-walk-text
+              - steady-upraised-hand
+              - steady-walking-man
+              - flashing-upraised-hand
+        countdown:
+          type: boolean
+          description: Does the crosswalk feature an instrumented phase timer
+        audible:
+          type: boolean
+          description: Is the crosswalk equipped with an audible warning for the
+            crossing/countdown
+        visor:
+          type: string
+          description: The type of visor installed on the beacon
+          nullable: true
+          enum:
+            - egg-crate
+            - tunnel
+            - cap
+        call-button:
+          type: boolean
+          description: Can a pedestrian place a call or trigger this crosswalk with a button
+        tactile-surface:
+          type: boolean
+          description: Does the entrance to the crosswalk feature a tactile surface
+        state:
+          type: object
+          description: The current state of the crosswalk
+          properties:
+            pedestrianCall:
+              type: boolean
+              description: Pedestrian call placed, but has not been serviced.
+            activated:
+              type: boolean
+              description: Is the crosswalk activated?
+            phase:
+              type: string
+              description: The current phase of the crosswalk if instrumented
+              enum:
+                - walk-text
+                - do-not-walk-text
+                - steady-upraised-hand
+                - steady-walking-man
+                - flashing-upraised-hand
+              nullable: true
+            countdownTime:
+              description: The time remaining in this crosswalk phase if instrumented.
+              type: integer
+            updated:
+              description: The last time the status of this crosswalk was updated
+              type: string
+              format: date-time
+    Gate:
+      type: object
+      description: Describes a gate within the facility. Non-instrumented gates can be
+        created for discovery purposes, but will not allow for updates to
+        status.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this gate
+        uri:
+          type: string
+          description: The URI which can be used to access this gate directly
+        name:
+          type: string
+          description: A text based description of this gate
+        url:
+          type: string
+          description: A url with more information about this specific gate
+        longitude:
+          type: number
+          description: The longitude of the centroid of the gate
+        latitude:
+          type: number
+          description: The latitude of the centroid of the gate
+        electric:
+          type: boolean
+          description: Is this a manual or electric gate
+        arm:
+          type: boolean
+          description: Does this gate have an arm
+        slide:
+          type: boolean
+          description: Does this gate slide to the side?
+        swing:
+          type: boolean
+          description: Gate swings horizontally to open
+        lift:
+          type: boolean
+          description: Gate lifts to open
+        audible:
+          type: boolean
+          description: Gate has an audible alarm
+        state:
+          type: object
+          description: The current state of the gate
+          properties:
+            gateCall:
+              type: boolean
+              description: Gate open requested, but has not been serviced.
+            activated:
+              type: boolean
+              description: Gate in motion
+            open:
+              type: boolean
+              description: Is the gate open?
+              nullable: true
+            updated:
+              description: The last time the status of this gate was updated
+              type: string
+              format: date-time
+    Facility:
+      type: object
+      description: Describes the facility.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this Facility
+        uri:
+          type: string
+          description: The URI which can be used to access this facility directly
+        name:
+          type: string
+          description: A text based description of this facility
+        url:
+          type: string
+          description: A url with more information about this specific gate
+        urlMap:
+          type: string
+          description: A url with to a facility map
+        longitude:
+          type: number
+          description: The longitude of the centroid of the facility
+        latitude:
+          type: number
+          description: The latitude of the centroid of the facility
+        contactMaintenance:
+          type: string
+          description: Facility Maintenance contact
+        contactReservations:
+          type: string
+          description: Facility Reservation Contact
+        contactManager:
+          type: string
+          description: Facility Manager Contact
+        contactTechnical:
+          type: string
+          description: Facility Technical Contact
+        contactEmergency:
+          type: string
+          description: Facility Emergency Contact
+        unitDistance:
+          type: string
+          description: Facility Unit for Distance
+        unitMass:
+          type: string
+          description: Facility Unit for Mass
+    APIError:
+      type: object
+      properties:
+        internal_code:
+          type: integer
+          format: int32
+          description: The internal error code encountered by the API
+        status:
+          type: integer
+          description: The HTTP error code returned with this error object.
+        message:
+          type: string
+          description: The error message encountered
+        human_message:
+          type: string
+          description: A human readable HTTP error code

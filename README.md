@@ -18,32 +18,35 @@ The Mcity test facility is a highly automated and connected proving ground in So
 Our vision is that other facilities will implement the API standard on top of their hardware to provide a software abstraction layer of the facility. This allows mobility for tests and control scripts to move between multiple facilities that may have dissimilar hardware, and devices. 
 
 # Using OCTANE
-OCTANE is a specification for an API written using Swagger.
-The easiest way to edit and visualize the API is by loading the api.yaml file into the online editor at https://editor.swagger.io/
+OCTANE is a specification for an API written using OAS3.0.
+The easiest way to visualize the API is by viewing the Mcity implementation on [Mvillage](https://mvillage.um.city/apidocs/)
+
+The easiest way to edit the current version is using the [Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/mcity/octane-api/master/api.yaml)
 
 # Status of OCTANE
-Mar 7th, 2019 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development. We are using api-roadmap.yaml to guide the type of functions we plan to implement.
+Mar 16th, 2019 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development. We are using api-roadmap.yaml to guide the type of functions we plan to implement.
 
 We host both a test and production environment of this implementation for users of the test facility.
 The test environment can be found at https://mvillage.um.city/apidocs
 
-The web socket (Socket.io) support is _experimental_ and not well documented. The REST API is our current recommendation for users.
+The SocketIO websocket support is _experimental_ and not well documented. 
+The REST API is our current recommendation for users.
 
-The next major part of our work is on the signal abstraction of traffic lights.
+The next major part of our work is to finish and document the SocketIO functionality
 
 Implemented:
 * Intersections
+* Signals
 * Gates
 * Crosswalks
 * Rail crossings
 * Facility information
-* Initial Signal work
 * Initial websocket work
 
 Planned Schedule:
-* 03/2019 - Signals / Rail functions / Requests
-* 04/2019 - Segments / Sensors / Weather / Websockets / Logs / V2X
-* 05/2019 - V2X / Lighting control / Maintenance Equipment
+* 03/2019 - Rail functions / Requests / SocketIO
+* 04/2019 - Sensors / Weather / Logs / V2X
+* 05/2019 - V2X / Segments / Lighting control / Maintenance Equipment
 * 06/2019 - Data Collection / Additional Sensor work
 * 07/2019 - Robot Control / Weather control
 * 08/2019 - Scenario Storage / Playback / Status
@@ -52,13 +55,14 @@ Planned Schedule:
 # Release schedule / numbering
 The latest version of the API lives in the master branch in api.yaml
 
-The broad roadmap for planned features is loosely specified in api-roadmap.yaml
+The broad road map for planned features is loosely specified in api-roadmap.yaml
 
 Released are granted a Release Order Number (RON) and each RON will have it's own branch at time of release. 
 The highest RON branch is the latest standard of the API.
 
 * 06/27/18 - Initial spec release
 * 03/01/19 - Mcity initial implementation release
+* 03/16/19 - Release .0.2 with signal support and conversion to OAS3.0.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.
