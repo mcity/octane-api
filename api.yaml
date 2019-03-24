@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   description: Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous
     and connected vehicle test facilities.
-  version: 0.0.2
+  version: 0.0.3
   title: Mcity Control API
   contact:
     name: API support
@@ -44,9 +44,13 @@ tags:
     externalDocs:
       description: Discover Mcity's gates
       url: http://members.um.city/track/gates
+  - name: Sensors
+    description: Raw sensor feeds data and control
+    externalDocs:
+      description: Discover Mcity's sensors
+      url: http://members.um.city/track/sensors
   - name: WebSockets
-    description: Allows Socket.IO websocket subscription to namespaces for facility updates.
-      Websocket testing is not supported within this UI.
+    description: Socket.IO websocket. Events documented as \</namespace>/\<channel>/\<event>. Websocket testing is not supported within this UI.
     externalDocs:
       description: Socket.io documentation
       url: https://socket.io/
@@ -310,12 +314,11 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "500":
           description: Internal server error
-  /intersections/socket/updates:
+  /octane/intersection/update:
     get:
       tags:
         - WebSockets
-      summary: Web Socket endpoint that emits current state of all intersections in
-        Mcity
+      summary: Event emitted when the state of an intersection is updated.
       responses:
         "200":
           description: Success
@@ -325,11 +328,11 @@ paths:
                 type: object
                 items:
                   $ref: "#/components/schemas/Intersection"
-  /intersections/socket/phases:
+  /octane/intersection/request:
     get:
       tags:
         - WebSockets
-      summary: WebSocket endpoint that emits current state of all phases in Mcity
+      summary: A request to change state was made on this intersection
       responses:
         "200":
           description: Success
@@ -457,11 +460,25 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "500":
           description: Internal server error
-  /signals/socket/updates:
+  /octane/signal/update:
     get:
       tags:
         - WebSockets
-      summary: Web Socket endpoint that emits current state of all signals in Mcity
+      summary: Event emitted on update of signal state.
+      responses:
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Signal"
+  /octane/signal/request:
+    get:
+      tags:
+        - WebSockets
+      summary: Event emitted when a request to a signal is being serviced.
       responses:
         "200":
           description: Success
@@ -536,7 +553,13 @@ paths:
                   properties:
                     manualCall:
                       type: boolean
-                      description: Activate rail crossing cycle
+                      description: Activate rail crossing cycle (close, wait, open)
+                    manualCallTimeOverride:
+                      type: integer
+                      description: Specify a length of time the gate should stay in the closed position during a manual call. This setting does not persist.
+                    activated:
+                      type: boolean
+                      description: Activate or deactivate the rail crossing.
       responses:
         "200":
           description: Success
@@ -556,12 +579,25 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "500":
           description: Internal server error
-  /railcrossings/socket/updates:
+  /octane/railcrossing/update:
     get:
       tags:
         - WebSockets
-      summary: Web Socket endpoint that emits current state of all rail crossings in
-        Mcity
+      summary: Event emitted on update of railcrossing state.
+      responses:
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Railcrossing"
+  /octane/railcrossing/request:
+    get:
+      tags:
+        - WebSockets
+      summary: Event emitted when a request to a railcrossing is being serviced.
       responses:
         "200":
           description: Success
@@ -658,18 +694,32 @@ paths:
           $ref: "#/components/responses/NotAllowedError"
         "500":
           description: Internal server error
-  /crosswalks/socket/updates:
+  /octane/crosswalk/update:
     get:
       tags:
         - WebSockets
-      summary: Web Socket endpoint that emits current state of all crosswalks in Mcity
+      summary: Event emitted on update of railcrossing state.
       responses:
         "200":
           description: Success
           content:
             "*/*":
               schema:
-                type: array
+                type: object
+                items:
+                  $ref: "#/components/schemas/Crosswalk"
+  /octane/crosswalk/request:
+    get:
+      tags:
+        - WebSockets
+      summary: Event emitted when a request to a railcrossing is being serviced.
+      responses:
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
                 items:
                   $ref: "#/components/schemas/Crosswalk"
   /gates:
@@ -759,20 +809,274 @@ paths:
           $ref: "#/components/responses/NotAllowedError"
         "500":
           description: Internal server error
-  /gates/socket/updates:
+  /octane/gate/update:
     get:
       tags:
         - WebSockets
-      summary: Web Socket endpoint that emits current state of all gates in Mcity
+      summary: Event emitted on update of gate state.
       responses:
         "200":
           description: Success
           content:
             "*/*":
               schema:
-                type: array
+                type: object
                 items:
                   $ref: "#/components/schemas/Gate"
+  /octane/gate/request:
+    get:
+      tags:
+        - WebSockets
+      summary: Event emitted when a request to a gate is being serviced.
+      responses:
+        "200":
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Gate"
+  /sensors:
+    get:
+      tags:
+        - Sensors
+      summary: Return a list of sensors at this facility.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sensor"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  /sensors/packages:
+    get:
+      tags:
+        - Sensors
+      summary: Return a list of sensors packages and groupings from this facility.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SensorPackage"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  /sensors/cameras:
+    get:
+      tags:
+        - Sensors
+      summary: Return a list of cameras from this facility.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SensorCamera"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  /sensors/lidars:
+    get:
+      tags:
+        - Sensors
+      summary: Return a list of LIDAR sensors from this facility.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SensorLIDAR"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  /sensors/radars:
+    get:
+      tags:
+        - Sensors
+      summary: Return a list of RADAR sensors from this facility.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SensorRADAR"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Internal server error
+  "/sensor/{id}":
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A sensor ID string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Sensors
+      summary: Return information about a sensor.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sensor"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+  "/sensor/package/{id}":
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A sensor ID string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Sensors
+      summary: Return information about a grouping of sensors, known as a sensor package, with the specified ID.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SensorPackage"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+  "/sensor/camera/{id}":
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A sensor ID string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Sensors
+      summary: Return information about a camera with the specified ID.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SensorCamera"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+  "/sensor/lidar/{id}":
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A sensor ID string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Sensors
+      summary: Return information about a LIDAR with the specified ID.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SensorLIDAR"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
+  "/sensor/radar/{id}":
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A sensor ID string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Sensors
+      summary: Return information about a RADAR with the specified ID.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SensorRADAR"
+        "400":
+          $ref: "#/components/responses/PoorFormError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          description: Internal server error
   /facility:
     get:
       tags:
@@ -793,18 +1097,18 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "500":
           description: Internal server error
-  /facility/socket/updates:
+  /octane/facility/message:
     get:
       tags:
         - WebSockets
-      summary: Web Socket endpoint that emits Facility messages, updates, and warnings.
+      summary: Event emitted for scheduling notifications, staff request, or emergency.
       responses:
         "200":
           description: Success
           content:
             "*/*":
               schema:
-                type: array
+                type: object
                 items:
                   $ref: "#/components/schemas/Facility"
   /management/intersections/polling:
@@ -939,11 +1243,15 @@ paths:
                   description: Event Identifier
                 dateValid:
                   type: string
-                  description: UTC valid date/time
+                  format: date-time
+                  description: UTC valid date time
+                  example: "2019-03-16T16:47:04.123-4:00"
                 dateExpire:
                   type: string
-                  description: UTC expiration date/time
-        description: Request for a new token to be created
+                  format: date-time
+                  description: UTC expiration date time
+                  example: "2019-03-16T16:47:04.123-4:00"
+        description: Request for a new token to be created. Dates are in format of 2019-03-16T16:47:04.123-4:00
       responses:
         "200":
           description: Success
@@ -1408,10 +1716,12 @@ components:
           items:
             type: string
             enum:
-              - preflash
+              - presignal
               - closing
+              - closed
               - opening
-              - postflash
+              - postsignal
+              - open
         state:
           type: object
           description: The current state of the rail crossing
@@ -1426,10 +1736,12 @@ components:
               type: string
               description: The current phase of the rail crossing if instrumented
               enum:
-                - preflash
+                - presignal
                 - closing
+                - closed
                 - opening
-                - postflash
+                - postsignal
+                - open
               nullable: true
             gate:
               type: boolean
@@ -1620,6 +1932,302 @@ components:
               description: The last time the status of this gate was updated
               type: string
               format: date-time
+    Sensor:
+      type: object
+      description: A sensor or grouping of sensors located within the facility
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this sensor
+        uri:
+          type: string
+          description: The URI which can be used to access this sensor directly
+        name:
+          type: string
+          description: A text based description of the sensor
+        url:
+          type: string
+          description: A url with more information about this specific sensor
+        longitude:
+          type: number
+          description: The longitude of the centroid of the sensor
+        latitude:
+          type: number
+          description: The latitude of the centroid of the sensor
+        type:
+          type: string
+          enum:
+            - PACKAGE
+            - CAMERA
+            - LIDAR
+            - RADAR
+            - SONAR
+            - WIRE
+            - BEAM
+            - SOFT
+          description: The sensor type
+        manufacturer:
+          type: string
+          description: The sensor manufacturer 
+        model:
+          type: string
+          description: The model number/name of the sensor
+        revision:
+          type: string
+          description: Sensor revision number/edition information
+    SensorCamera:
+      type: object
+      description: A camera sensor located within the facility
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this sensor
+        uri:
+          type: string
+          description: The URI which can be used to access this sensor
+        name:
+          type: string
+          description: A text based description of the sensor
+        url:
+          type: string
+          description: A url with more information about this specific sensor
+        longitude:
+          type: number
+          description: The longitude of the centroid of the sensor
+        latitude:
+          type: number
+          description: The latitude of the centroid of the sensor
+        type:
+          type: string
+          enum:
+            - Camera
+          description: The sensor type
+        manufacturer:
+          type: string
+          description: The sensor manufacturer 
+        model:
+          type: string
+          description: The model number/name of the sensor
+        revision:
+          type: string
+          description: Sensor revision number/edition information
+        ipAddress:
+          type: string
+          description: The IP Address of the sensor
+        urlWebInterface:
+          type: string
+          description: A URL allowing control or management of the sensor
+        urlStream:
+          type: string
+          description: A URL for retrieving a stream of video from the camera.
+        urlStill:
+          type: string
+          description: A URL allowing still capture from the camera.
+        urlStreamFormat:
+          type: string
+          description: The file format of the stream endpoint.
+        urlStillFormat:
+          type: string
+          description: The file format of the still endpoint.
+        resolutionStream:
+          type: string
+          description: The maximum resolution of streaming video.
+        resolutionStill:
+          type: string
+          description: The maximum resolution of still capture
+        framerate:
+          type: number
+          description: The max number of frames achievable at max resolution.
+        lens:
+          type: string
+          description: Detail about camera lens information.
+    SensorPackage:
+      type: object
+      description: A grouping of sensors located within the facility
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this sensor package
+        uri:
+          type: string
+          description: The URI which can be used to access this sensor package
+        name:
+          type: string
+          description: A text based description of the sensor package
+        url:
+          type: string
+          description: A url with more information about this specific sensor package
+        longitude:
+          type: number
+          description: The longitude of the centroid of the sensor package
+        latitude:
+          type: number
+          description: The latitude of the centroid of the sensor package
+        type:
+          type: string
+          enum:
+            - PACKAGE
+          description: The sensor type
+        manufacturer:
+          type: string
+          description: The sensor package manufacturer 
+        model:
+          type: string
+          description: The model number/name of the sensor package
+        revision:
+          type: string
+          description: Sensor package revision number/edition information
+        ipAddress:
+          type: string
+          description: The ip address of the sensor package
+        urlWebInterface:
+          type: string
+          description: A URL allowing control or management of the sensor package
+        cameras:
+            type: array
+            description: Cameras included in this sensor package
+            items:
+                $ref: "#/components/schemas/SensorCamera"
+        lidars:
+            type: array
+            description: LIDARs included in this sensor package
+            items:
+                $ref: "#/components/schemas/SensorLIDAR"
+        radars:
+            type: array
+            description: RADARs included in this sensor package
+            items:
+                $ref: "#/components/schemas/SensorRADAR"
+    SensorRADAR:
+      type: object
+      description: A radar sensor located within the facility
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this sensor
+        uri:
+          type: string
+          description: The URI which can be used to access this sensor
+        name:
+          type: string
+          description: A text based description of the sensor
+        url:
+          type: string
+          description: A url with more information about this specific sensor
+        longitude:
+          type: number
+          description: The longitude of the centroid of the sensor
+        latitude:
+          type: number
+          description: The latitude of the centroid of the sensor
+        type:
+          type: string
+          enum:
+            - RADAR
+          description: The sensor type
+        manufacturer:
+          type: string
+          description: The sensor manufacturer 
+        model:
+          type: string
+          description: The model number/name of the sensor
+        revision:
+          type: string
+          description: Sensor revision number/edition information
+        ipAddress:
+          type: string
+          description: The IP Address of the sensor
+        urlWebInterface:
+          type: string
+          description: A URL allowing control or management of the sensor
+        rangeMax:
+          type: number
+          description: The maximum range of the sensor.
+        rangeAccuracy:
+          type: number
+          description: The accuracy range rating of the sensor.
+        speedAccuracy:
+          type: number
+          description: The accuracy of speed detection of the sensor
+        resolutionUpdateRate:
+          type: number
+          description: The rate at which the sensor updates.
+        objectedTrackedMax:
+          type: integer
+          description: The maximum number of objects tracked by the sensor.
+    SensorLIDAR:
+      type: object
+      description: A LIDAR sensor located within the facility
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this sensor
+        uri:
+          type: string
+          description: The URI which can be used to access this sensor
+        name:
+          type: string
+          description: A text based description of the sensor
+        url:
+          type: string
+          description: A url with more information about this specific sensor
+        longitude:
+          type: number
+          description: The longitude of the centroid of the sensor
+        latitude:
+          type: number
+          description: The latitude of the centroid of the sensor
+        type:
+          type: string
+          enum:
+            - LIDAR
+          description: The sensor type
+        manufacturer:
+          type: string
+          description: The sensor manufacturer 
+        model:
+          type: string
+          description: The model number/name of the sensor
+        revision:
+          type: string
+          description: Sensor revision number/edition information
+        ipAddress:
+          type: string
+          description: The IP Address of the sensor
+        urlWebInterface:
+          type: string
+          description: A URL allowing control or management of the sensor
+        rangeTypical:
+          type: number
+          description: The typical range of the sensor.
+        accuracyTypical:
+          type: number
+          description: The typical accuracy of the sensor.
+        resolutionAngularDegree:
+          type: number
+          description: The max angular resolution of this LIDAR.
+        resolutionDistance:
+          type: number
+          description: The resolution at max distance of this LIDAR.
+        beamCount:
+          type: integer
+          description: The number of beams this LIDAR uses for sensing.
+        fovHorizontalDegree:
+          type: number
+          description: The horizontal FOV of this sensor.
+        fovVerticalDegree:
+          type: number
+          description: The vertical FOV of this sensor.
     Facility:
       type: object
       description: Describes the facility.

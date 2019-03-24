@@ -40,14 +40,15 @@ Implemented:
 * Gates
 * Crosswalks
 * Rail crossings
+* Sensor enumeration
 * Facility information
 * Initial websocket work
 
-Planned Schedule:
-* 03/2019 - Rail functions / Requests / SocketIO
-* 04/2019 - Sensors / Weather / Logs / V2X
-* 05/2019 - V2X / Segments / Lighting control / Maintenance Equipment
-* 06/2019 - Data Collection / Additional Sensor work
+Planned Development Schedule:
+* 03/2019 - Requests / SocketIO
+* 04/2019 - Weather / Logging / V2X
+* 05/2019 - Sample UI / V2X / Segments / Lighting control / Maintenance Equipment
+* 06/2019 - Sensor Data Collection
 * 07/2019 - Robot Control / Weather control
 * 08/2019 - Scenario Storage / Playback / Status
 * 09/2019 - UI Interface for control / First full API spec release (RON 1)
@@ -63,6 +64,7 @@ The highest RON branch is the latest standard of the API.
 * 06/27/18 - Initial spec release
 * 03/01/19 - Mcity initial implementation release
 * 03/16/19 - Release .0.2 with signal support and conversion to OAS3.0.
+* 03/24/19 - Release .0.3 with sensor support and enhanced rail functionality.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.
