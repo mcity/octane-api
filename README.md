@@ -43,14 +43,14 @@ Implemented:
 * Sensor enumeration
 * Facility information
 * Initial websocket work
+* Socket IO - Initial
+* V2X - Experimental
 
 Planned Development Schedule:
-* 03/2019 - Requests / SocketIO
-* 04/2019 - Weather / Logging / V2X
-* 05/2019 - Sample UI / V2X / Segments / Lighting control / Maintenance Equipment
-* 06/2019 - Sensor Data Collection
-* 07/2019 - Robot Control / Weather control
-* 08/2019 - Scenario Storage / Playback / Status
+* 05/2019 - Sample UI / V2X
+* 06/2019 - Sensor Data Collection / Weather / Logging / Requests
+* 07/2019 - Robot Control / Segments / Lighting control / Maintenance Equipment
+* 08/2019 - Scenario Storage / Playback / Status /  Weather control /
 * 09/2019 - UI Interface for control / First full API spec release (RON 1)
 
 # Release schedule / numbering
@@ -65,6 +65,7 @@ The highest RON branch is the latest standard of the API.
 * 03/01/19 - Mcity initial implementation release
 * 03/16/19 - Release .0.2 with signal support and conversion to OAS3.0.
 * 03/24/19 - Release .0.3 with sensor support and enhanced rail functionality.
+* 05/15/19 - Release .0.4 added documentation around Socket.IO connection and Initial V2X work, Intersection Phase documentation of timing/colors.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.
