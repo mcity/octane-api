@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   description: Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous
-    and connected vehicle test facilities.
-  version: 0.0.4
+    and connected vehicle test facilities/cities.
+  version: 0.0.6
   title: Mcity Control API
   contact:
     name: API support
@@ -10,6 +10,13 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://mcity.um.city/api
+    description: Production server
+  - url: https://mvillage.um.city/api
+    description: Test server
+  - url: http://localhost:5000/api
+    description: Dev server
 security:
   - APIKeyHeader:
       []
@@ -18,37 +25,37 @@ tags:
     description: Information about the facility
     externalDocs:
       description: Discover Mcity
-      url: http://mcity.umich.edu
+      url: https://mcity.umich.edu
   - name: Intersections
     description: Management of intersections
     externalDocs:
       description: Discover Mcity's intersections
-      url: http://members.um.city/track/intersections
+      url: https://members.um.city/wiki/track/intersections
   - name: Signals
     description: Management of traffic signals
     externalDocs:
       description: Discover Mcity's traffic signals
-      url: http://members.um.city/track/signals
+      url: https://members.um.city/wiki/track/signals
   - name: Rail
     description: Management of rail crossings.
     externalDocs:
       description: Discover Mcity's rail service
-      url: http://members.um.city/track/rail
+      url: https://members.um.city/wiki/track/rail
   - name: Crosswalks
     description: Management of crosswalks
     externalDocs:
       description: Discover Mcity's crosswalks
-      url: http://members.um.city/track/crosswalks
+      url: https://members.um.city/wiki/track/crosswalks
   - name: Gates
     description: Control of facility gates
     externalDocs:
       description: Discover Mcity's gates
-      url: http://members.um.city/track/gates
+      url: https://members.um.city/wiki/track/gates
   - name: Sensors
     description: Raw sensor feed, enumeration, and control
     externalDocs:
       description: Discover Mcity's sensors
-      url: http://members.um.city/track/sensors
+      url: https://members.um.city/wiki/track/sensors
   - name: WebSockets-Channels
     description: EXPERIMENTAL - Socket.IO websocket supported channels documented as \</namespace>/\<channel>/. Websocket testing is not supported within this UI.
     externalDocs:
@@ -68,7 +75,7 @@ tags:
     description: EXPERIMENTAL - V2X RSU and OBU management, near real time messages available via WebSocket
     externalDocs:
       description: Discover Mcity's V2X Technology
-      url: http://members.um.city/track/v2x
+      url: https://members.um.city/wiki/track/v2x
 paths:
   /intersections:
     get:
@@ -76,19 +83,24 @@ paths:
         - Intersections
       summary: Return a list of intersection objects.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Intersection"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  intersections:
+                    type: array
+                    description: A list of modules supported by octane
+                    items:
+                      $ref: '#/components/schemas/Intersection'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
     patch:
       tags:
@@ -122,7 +134,7 @@ paths:
                         control commands to be automatically cleared this
                         input number of seconds.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -135,15 +147,15 @@ paths:
                     items:
                       type: string
                         
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/intersection/{id}":
+  /intersection/{id}:
     parameters:
       - in: path
         name: id
@@ -157,19 +169,23 @@ paths:
         - Intersections
       summary: Return an intersection object with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Intersection"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  intersection:
+                    type: object
+                    description: A single intersection
+                    $ref: '#/components/schemas/Intersection'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
     patch:
       tags:
@@ -235,7 +251,7 @@ paths:
                         controller causes control commands to be cleared after
                         input number of seconds.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -245,15 +261,15 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/intersection/{id}/phases":
+  /intersection/{id}/phases:
     parameters:
       - in: path
         name: id
@@ -267,7 +283,7 @@ paths:
       tags:
         - Intersections
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -275,16 +291,16 @@ paths:
                 type: array
                 description: A list of phases for this intersection
                 items:
-                  $ref: "#/components/schemas/Phase"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                  $ref: '#/components/schemas/Phase'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/intersection/{id}/signals":
+  /intersection/{id}/signals:
     parameters:
       - in: path
         name: id
@@ -298,24 +314,26 @@ paths:
       tags:
         - Intersections
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                description: A list of signals for this intersection
-                items:
-                  $ref: "#/components/schemas/Signal"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  signals:
+                    type: array
+                    description: A list of signals for this intersection
+                    items:
+                      $ref: '#/components/schemas/Signal'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/intersection/{id}/crosswalks":
+  /intersection/{id}/crosswalks:
     parameters:
       - in: path
         name: id
@@ -329,7 +347,7 @@ paths:
       tags:
         - Intersections
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -337,16 +355,16 @@ paths:
                 type: array
                 description: A list of crosswalks within this intersection
                 items:
-                  $ref: "#/components/schemas/Crosswalk"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                  $ref: '#/components/schemas/Crosswalk'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/intersection/{id}/stages":
+  /intersection/{id}/stages:
     parameters:
       - in: path
         name: id
@@ -360,7 +378,7 @@ paths:
       tags:
         - Intersections
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -368,14 +386,14 @@ paths:
                 type: array
                 description: A list of phases for this intersection
                 items:
-                  $ref: "#/components/schemas/Stage"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                  $ref: '#/components/schemas/Stage'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /octane/intersection:
     get:
@@ -383,7 +401,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing intersection_* events.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/intersection_update:
     get:
@@ -391,26 +409,26 @@ paths:
         - WebSockets-Events
       summary: Event emitted when the state of an intersection is updated.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/IntersectionState"
+                $ref: '#/components/schemas/IntersectionState'
   /octane/intersection_request:
     get:
       tags:
         - WebSockets-Events
       summary: Event published when request to change state was made on this intersection.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/Intersection"
+                  $ref: '#/components/schemas/Intersection'
   /signals:
     get:
       tags:
@@ -418,21 +436,26 @@ paths:
       summary: Return a list of signal objects describing all instrumented signals
         within the facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Signal"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  signals:
+                    type: array
+                    description: A list of signals
+                    items:
+                      $ref: '#/components/schemas/Signal'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/signal/{id}":
+  /signal/{id}:
     parameters:
       - in: path
         name: id
@@ -446,19 +469,23 @@ paths:
         - Signals
       summary: Return an signal object with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Signal"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  signal:
+                    type: object
+                    description: A single signal
+                    $ref: '#/components/schemas/Signal'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
     patch:
       tags:
@@ -511,7 +538,7 @@ paths:
                             - yellow
                             - green
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -521,13 +548,13 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /octane/signal:
     get:
@@ -535,7 +562,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing intersection_* events.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/signal_update:
     get:
@@ -543,26 +570,26 @@ paths:
         - WebSockets-Events
       summary: Event emitted on update of signal state.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SignalState"
+                $ref: '#/components/schemas/SignalState'
   /octane/signal_request:
     get:
       tags:
         - WebSockets-Events
       summary: Event emitted when a request to a signal is being serviced.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/Signal"
+                  $ref: '#/components/schemas/Signal'
   /railcrossings:
     get:
       tags:
@@ -570,21 +597,26 @@ paths:
       summary: Return a list of rail crossing objects describing all instrumented
         crossings within the facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Railcrossing"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  railcrossings:
+                    type: array
+                    description: A list of rail crossings
+                    items:
+                      $ref: '#/components/schemas/Railcrossing'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/railcrossing/{id}":
+  /railcrossing/{id}:
     parameters:
       - in: path
         name: id
@@ -598,19 +630,23 @@ paths:
         - Rail
       summary: Return an rail crossing object with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Railcrossing"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  railcrossing:
+                    type: object
+                    description: A single railcrossing
+                    $ref: '#/components/schemas/Railcrossing'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
     patch:
       tags:
@@ -636,7 +672,7 @@ paths:
                       type: boolean
                       description: Activate or deactivate the rail crossing.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -646,13 +682,13 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /octane/railcrossing:
     get:
@@ -660,7 +696,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing railcrossing_* events.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/railcrossing_update:
     get:
@@ -668,26 +704,26 @@ paths:
         - WebSockets-Events
       summary: Event emitted on update of railcrossing state.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RailcrossingState"
+                $ref: '#/components/schemas/RailcrossingState'
   /octane/railcrossing_request:
     get:
       tags:
         - WebSockets-Events
       summary: Event emitted when a request to a railcrossing is being serviced.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/Railcrossing"
+                  $ref: '#/components/schemas/Railcrossing'
   /crosswalks:
     get:
       tags:
@@ -695,21 +731,26 @@ paths:
       summary: Return a list of crosswalk objects describing all instrumented crossings
         within the facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Crosswalk"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  crosswalks:
+                    type: array
+                    description: A list of crosswalks
+                    items:
+                      $ref: '#/components/schemas/Crosswalk'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/crosswalk/{id}":
+  /crosswalk/{id}:
     parameters:
       - in: path
         name: id
@@ -723,19 +764,23 @@ paths:
         - Crosswalks
       summary: Return a crosswalk object with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Crosswalk"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  crosswalk:
+                    type: object
+                    description: A single crosswalk
+                    $ref: '#/components/schemas/Crosswalk'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
     patch:
       tags:
@@ -755,7 +800,7 @@ paths:
                       type: boolean
                       description: Activate crosswalk cycle
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -765,15 +810,13 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "405":
-          $ref: "#/components/responses/NotAllowedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /octane/crosswalk:
     get:
@@ -781,7 +824,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing crosswalk_* events.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/crosswalk_update:
     get:
@@ -789,26 +832,26 @@ paths:
         - WebSockets-Events
       summary: Event emitted on update of railcrossing state.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CrosswalkState"
+                $ref: '#/components/schemas/CrosswalkState'
   /octane/crosswalk_request:
     get:
       tags:
         - WebSockets-Events
       summary: Event emitted when a request to a railcrossing is being serviced.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/Crosswalk"
+                  $ref: '#/components/schemas/Crosswalk'
   /gates:
     get:
       tags:
@@ -816,21 +859,26 @@ paths:
       summary: Return a list of gate objects describing all instrumented gates
         within the facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Gate"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  gates:
+                    type: array
+                    description: A list of Gates
+                    items:
+                      $ref: '#/components/schemas/Gate'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/gate/{id}":
+  /gate/{id}:
     parameters:
       - in: path
         name: id
@@ -844,19 +892,23 @@ paths:
         - Gates
       summary: Return a gate object with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Gate"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  gate:
+                    type: object
+                    description: A single gate
+                    $ref: '#/components/schemas/Gate'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
     patch:
       tags:
@@ -876,7 +928,7 @@ paths:
                       type: boolean
                       description: Activate gate cycle
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -886,15 +938,13 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "405":
-          $ref: "#/components/responses/NotAllowedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /octane/gate:
     get:
@@ -902,7 +952,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing gate_* events.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/gate_update:
     get:
@@ -910,45 +960,50 @@ paths:
         - WebSockets-Events
       summary: Event emitted on update of gate state.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GateState"
+                $ref: '#/components/schemas/GateState'
   /octane/gate_request:
     get:
       tags:
         - WebSockets-Events
       summary: Event emitted when a request to a gate is being serviced.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/Gate"
+                  $ref: '#/components/schemas/Gate'
   /sensors:
     get:
       tags:
         - Sensors
       summary: Return a list of sensors at this facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Sensor"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  sensors:
+                    type: array
+                    description: A list of Sensors
+                    items:
+                      $ref: '#/components/schemas/Sensor'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /sensors/packages:
     get:
@@ -956,19 +1011,24 @@ paths:
         - Sensors
       summary: Return a list of sensors packages and groupings from this facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SensorPackage"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  packages:
+                    type: array
+                    description: A list of Sensor packages
+                    items:
+                      $ref: '#/components/schemas/SensorPackage'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /sensors/cameras:
     get:
@@ -976,19 +1036,24 @@ paths:
         - Sensors
       summary: Return a list of cameras from this facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SensorCamera"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  cameras:
+                    type: array
+                    description: A list of Sensor cameras
+                    items:
+                      $ref: '#/components/schemas/SensorCamera'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /sensors/lidars:
     get:
@@ -996,19 +1061,24 @@ paths:
         - Sensors
       summary: Return a list of LIDAR sensors from this facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SensorLIDAR"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  lidars:
+                    type: array
+                    description: A list of Sensor LIDAR
+                    items:
+                      $ref: '#/components/schemas/SensorLIDAR'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /sensors/radars:
     get:
@@ -1016,21 +1086,26 @@ paths:
         - Sensors
       summary: Return a list of RADAR sensors from this facility.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SensorRADAR"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  radars:
+                    type: array
+                    description: A list of Sensor RADAR
+                    items:
+                      $ref: '#/components/schemas/SensorRADAR'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/sensor/{id}":
+  /sensor/{id}:
     parameters:
       - in: path
         name: id
@@ -1044,21 +1119,25 @@ paths:
         - Sensors
       summary: Return information about a sensor.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Sensor"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  gate:
+                    type: object
+                    description: A single sensor
+                    $ref: '#/components/schemas/Sensor'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/sensor/package/{id}":
+  /sensor/package/{id}:
     parameters:
       - in: path
         name: id
@@ -1072,21 +1151,25 @@ paths:
         - Sensors
       summary: Return information about a grouping of sensors, known as a sensor package, with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SensorPackage"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  package:
+                    type: object
+                    description: A single sensor package
+                    $ref: '#/components/schemas/SensorPackage'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/sensor/camera/{id}":
+  /sensor/camera/{id}:
     parameters:
       - in: path
         name: id
@@ -1100,21 +1183,25 @@ paths:
         - Sensors
       summary: Return information about a camera with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SensorCamera"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  camera:
+                    type: object
+                    description: A single sensor camera
+                    $ref: '#/components/schemas/SensorCamera'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/sensor/lidar/{id}":
+  /sensor/lidar/{id}:
     parameters:
       - in: path
         name: id
@@ -1128,21 +1215,25 @@ paths:
         - Sensors
       summary: Return information about a LIDAR with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SensorLIDAR"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  lidar:
+                    type: object
+                    description: A single sensor LIDAR
+                    $ref: '#/components/schemas/SensorLIDAR'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/sensor/radar/{id}":
+  /sensor/radar/{id}:
     parameters:
       - in: path
         name: id
@@ -1156,19 +1247,23 @@ paths:
         - Sensors
       summary: Return information about a RADAR with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SensorRADAR"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  radar:
+                    type: object
+                    description: A single sensor RADAR
+                    $ref: '#/components/schemas/SensorRADAR'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /facility:
     get:
@@ -1176,19 +1271,24 @@ paths:
         - Facility
       summary: Return information about the facility and current reservation.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Facility"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  facility:
+                    type: array
+                    description: A list of modules supported by octane
+                    items:
+                      $ref: '#/components/schemas/Facility'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /octane/facility:
     get:
@@ -1196,7 +1296,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing facility_* events.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/facility_message:
     get:
@@ -1204,62 +1304,66 @@ paths:
         - WebSockets-Events
       summary: Event emitted for scheduling notifications, staff request, or emergency.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/Facility"
+                  $ref: '#/components/schemas/Facility'
   /octane/facility_request:
     get:
       tags:
         - WebSockets-Events
       summary: Event emitted for facility wide requests.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/Facility"  
+                  $ref: '#/components/schemas/Facility' 
   /octane/facility_update:
     get:
       tags:
         - WebSockets-Events
       summary: Event emitted for facility wide status updates.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/Facility"
+                  $ref: '#/components/schemas/Facility'
   /v2x:
     get:
       tags:
         - V2X
-      summary: Return a list of V2X devices known to OCTANE
-        within the facility.
+      summary: Return a list of V2X devices known to OCTANE.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/V2X"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  v2xs:
+                    type: array
+                    description: A list of V2X devices.
+                    items:
+                      $ref: '#/components/schemas/V2X'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /v2x/rsus:
     get:
@@ -1267,19 +1371,24 @@ paths:
         - V2X
       summary: Return a list of V2X RSUs known to OCTANE.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/V2X"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  rsus:
+                    type: array
+                    description: A list of V2X RSU devices.
+                    items:
+                      $ref: '#/components/schemas/V2X'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /v2x/obus:
     get:
@@ -1287,21 +1396,26 @@ paths:
         - V2X
       summary: Return a list of V2X OBUs known to OCTANE.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/V2X"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+                properties:
+                  obus:
+                    type: array
+                    description: A list of V2X OBU devices.
+                    items:
+                      $ref: '#/components/schemas/V2X'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/v2x/{id}":
+  /v2x/{id}:
     parameters:
       - in: path
         name: id
@@ -1315,21 +1429,25 @@ paths:
         - V2X
       summary: Return a v2x object with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/V2X"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  v2x:
+                    type: object
+                    description: A single V2X device
+                    $ref: '#/components/schemas/V2X'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/v2x/rsu/{id}":
+  /v2x/rsu/{id}:
     parameters:
       - in: path
         name: id
@@ -1343,19 +1461,23 @@ paths:
         - V2X
       summary: Return a v2x object with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/V2X"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  rsu:
+                    type: object
+                    description: A single V2X RSU device
+                    $ref: '#/components/schemas/V2X'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
     patch:
       tags:
@@ -1375,7 +1497,7 @@ paths:
                       type: string
                       enum: [ON, OFF]
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1385,18 +1507,15 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "405":
-          $ref: "#/components/responses/NotAllowedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-
-  "/v2x/rsu/{id}/bsm":
+  /v2x/rsu/{id}/bsm:
     parameters:
       - in: path
         name: id
@@ -1415,10 +1534,10 @@ paths:
           application/json:
             schema:
               type: object
-              items:
-                $ref: "#/components/schemas/V2XSPaT"
+              description: A V2X BSM to be sent.
+              $ref: '#/components/schemas/V2XBSM'
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1428,17 +1547,15 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "405":
-          $ref: "#/components/responses/NotAllowedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
-  "/v2x/obu/{id}":
+  /v2x/obu/{id}:
     parameters:
       - in: path
         name: id
@@ -1452,19 +1569,23 @@ paths:
         - V2X
       summary: Return a v2x object with the specified ID.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/V2X"
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "500":
+                properties:
+                  obu:
+                    type: object
+                    description: A single V2X OBU device
+                    $ref: '#/components/schemas/V2X'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
     patch:
       tags:
@@ -1487,7 +1608,7 @@ paths:
                       type: number
                       description: The latitude of the V2X device.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1497,15 +1618,13 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "405":
-          $ref: "#/components/responses/NotAllowedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /octane/v2x:
     get:
@@ -1513,7 +1632,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing requests and updates from V2X devices. Provides notifications when new devices are heard from.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_rsu_raw:
     get:
@@ -1521,7 +1640,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing raw v2x_* events from all known RSUs.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_obu_raw:
     get:
@@ -1529,7 +1648,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing raw v2x_* events from all known OBUs.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_rsu_parsed:
     get:
@@ -1537,15 +1656,15 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing raw v2x_* events from all known RSUs.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_obu_parsed:
     get:
       tags:
         - WebSockets-Channels
-      summary: Channel used for publishing raw v2x_* events from all known OBUs.
+      summary: COMING SOON - Channel used for publishing raw v2x_* events from all known OBUs.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_rsu_[id]_raw:
     get:
@@ -1553,7 +1672,7 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing all raw v2x_* events from a specific RSU.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_obu_[id]_raw:
     get:
@@ -1561,23 +1680,23 @@ paths:
         - WebSockets-Channels
       summary: Channel used for publishing all raw v2x_* events from a specific OBU.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_rsu_[id]_parsed:
     get:
       tags:
         - WebSockets-Channels
-      summary: Mcity json formatted version of events from a specific RSU.
+      summary: JSON formatted version of events from a specific RSU.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_obu_[id]_parsed:
     get:
       tags:
         - WebSockets-Channels
-      summary: Mcity json formatted version of events from a specific OBU.
+      summary: formatted version of events from a specific OBU.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/v2x_update:
     get:
@@ -1585,84 +1704,199 @@ paths:
         - WebSockets-Events
       summary: Event emitted on update of V2X device state.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/V2X"
+                  $ref: '#/components/schemas/V2X'
   /octane/v2x_request:
     get:
       tags:
         - WebSockets-Events
       summary: Event emitted on request to a V2X device.
       responses:
-        "200":
+        200:
           description: Success
           content:
             "*/*":
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/V2X"
+                  $ref: '#/components/schemas/V2X'
   /octane/v2x_new:
     get:
       tags:
         - WebSockets-Events
-      summary: Event emitted when a new V2X device is heard from and added to the V2X device listing.
+      summary: COMING SOON - Event emitted when a new V2X device is heard from and added to the V2X device listing.
       responses:
-        "200":
+        200:
           description: Success
           content:
-            "*/*":
+            application/json:
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/V2X"
+                  $ref: '#/components/schemas/V2X'
   /octane/v2x_raw:
     get:
       tags:
         - WebSockets-Events
       summary: Event emitted on message between V2X devices.
       responses:
-        "200":
+        200:
           description: Success
           content:
-            "*/*":
+            application/json:
               schema:
-                type: object
-                items:
-                  $ref: "#/components/schemas/V2X"
+                $ref: "#/components/schemas/V2XRaw"
   /octane/v2x_SPaT:
     get:
       tags:
         - WebSockets-Events
       summary: On receipt of a V2X SPaT message, this event is emitted with a parsed version of the message.
       responses:
-        "200":
+        200:
           description: Success
           content:
-            "*/*":
+            application/json:
               schema:
                 type: object
                 items:
-                  $ref: "#/components/schemas/V2XSPaT"
+                  $ref: '#/components/schemas/V2XSPaT'
   /octane/v2x_BSM:
     get:
       tags:
         - WebSockets-Events
       summary: On receipt of a V2X BSM message, this event is emitted with a parsed version of the message.
       responses:
-        "200":
+        200:
           description: Success
           content:
-            "*/*":
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2XBSM'
+  /management/modules:
+    get:
+      tags:
+        - Management
+      summary: Return a list of Modules supported by this instance of Octane
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  modules:
+                    type: array
+                    description: A list of modules supported by octane
+                    items:
+                      type: string
+                      example: [Crosswalk, Intersections, V2X]
+        400:
+          $ref: "#/components/responses/PoorFormError"
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        500:
+          description: Internal server error
+  /management/favorites:
+    get:
+      tags:
+        - Management
+      summary: "Retrieve list of all favorites."
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  favorites:
+                    type: array
+                    description: A list of the users Favorite items from each module.
+                    items:
+                      $ref: '#/components/schemas/Favorite'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /management/favorite:
+    post:
+      tags:
+        - Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                moduleName:
+                  type: string
+                favoriteID:
+                  type: integer
+      summary: "Add a favorite to database."
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /management/favorite/{moduleName}/{favoriteId}:
+    delete:
+      parameters: 
+        - name: moduleName
+          in: path
+          required: true
+          description: Type of infrastructure
+          schema:
+            type: string
+            description: Type of infrastructure
+        - name: favoriteId
+          in: path
+          required: true
+          description: Type of infrastructure id
+          schema:
+            type: integer
+            description: Type of infrastructure id
+      tags:
+      - Management
+      summary: "Delete a favorite from the database."
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
               schema:
                 type: object
-                items:
-                  $ref: "#/components/schemas/V2XSPaT"
+                description: A message regarding the status of the deletion.
+                properties:
+                  message:
+                    type: string
+                    description: The delete request was successful.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /management/intersections/polling:
     patch:
       tags:
@@ -1682,7 +1916,7 @@ paths:
                       description: Starts or terminates all polling processes.
         description: Modifications to the process that controls intersection updates
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1692,11 +1926,13 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /management/facility/reset:
     post:
@@ -1717,7 +1953,7 @@ paths:
                       description: Confirms the reset of the facility.
         description: Modify the state of all devices in the facility
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1727,11 +1963,13 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /management/device/callback:
     post:
@@ -1759,7 +1997,7 @@ paths:
                   description: The time this event was published.
         description: External devices use this to modify state of API managed device state.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1769,11 +2007,13 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /management/token:
     post:
@@ -1805,7 +2045,7 @@ paths:
                   example: "2019-03-16T16:47:04.123-4:00"
         description: Request for a new token to be created. Dates are in format of 2019-03-16T16:47:04.123-4:00
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1815,11 +2055,13 @@ paths:
                   token:
                     type: string
                     description: Newly generated access token
-        "400":
-          $ref: "#/components/responses/PoorFormError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
           description: Internal server error
   /octane/user:
     get:
@@ -1827,7 +2069,7 @@ paths:
         - WebSockets-Channels
       summary: Channel for IPC, Timing, and direct messages. Publishes user_* events.
       responses:
-        "200":
+        200:
           description: Join of Channel
   /octane/user_message:
     get:
@@ -1835,7 +2077,7 @@ paths:
         - WebSockets-Events
       summary: Event emitted to other users when a user emits in the user channel.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1851,7 +2093,7 @@ paths:
         - WebSockets-Events
       summary: Event to be submitted for broadcast to the user channel only.
       responses:
-        "200":
+        200:
           description: Success
       requestBody:
         content:
@@ -1869,14 +2111,14 @@ paths:
         - WebSockets-Events
       summary: Event emitted to other users when a user joins a channel successfully.
       responses:
-        "200":
+        200:
           description: Success
     post:
       tags:
         - WebSockets-Events
       summary: Event to be submitted for user to join a specified channel.
       responses:
-        "200":
+        200:
           description: Success
       requestBody:
         content:
@@ -1894,14 +2136,14 @@ paths:
         - WebSockets-Events
       summary: Event emitted to other users when a user leaves a channel successfully.
       responses:
-        "200":
+        200:
           description: Success
     post:
       tags:
         - WebSockets-Events
       summary: Event to be submitted for user to leave a specified channel.
       responses:
-        "200":
+        200:
           description: Success
       requestBody:
         content:
@@ -1919,7 +2161,7 @@ paths:
         - WebSockets-Events
       summary: Emitted in response to request for OCTANE channels.
       responses:
-        "200":
+        200:
           description: Success
           content:
             application/json:
@@ -1939,53 +2181,44 @@ paths:
         - WebSockets-Events
       summary: Event to be submitted to request current users channels and all valid channels.
       responses:
-        "200":
+        200:
           description: Success
 
 externalDocs:
   description: Mcity website
   url: https://mcity.umich.edu
-servers:
-  - url: /api/
 components:
   responses:
     UnauthorizedError:
-      description: Authorization Error - API key is missing or invalid
+      description: 'Authorization Error - API key is missing or invalid'
       content:
-        "*/*":
+        application/json:
           schema:
-            $ref: "#/components/schemas/APIError"
-    ConflictsError:
-      description: ID was specified, but object already exists with that ID.
-      content:
-        "*/*":
-          schema:
-            $ref: "#/components/schemas/APIError"
+            $ref: '#/components/schemas/APIError'
     PoorFormError:
-      description: Request to this endpoint was not appropriately formed.
+      description: 'Request to this endpoint was not appropriately formed.'
       content:
-        "*/*":
+        application/json:
           schema:
-            $ref: "#/components/schemas/APIError"
+            $ref: '#/components/schemas/APIError'
     NotFoundError:
-      description: Requested ID does not exist.
+      description: 'Requested ID does not exist.'
       content:
-        "*/*":
+        application/json:
           schema:
-            $ref: "#/components/schemas/APIError"
+            $ref: '#/components/schemas/APIError'
+    NotAllowedError:
+      description: 'Request was denied because resource does not support this action, or the action results in an invalid state.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIError'
     TeapotError:
       description: Request to create/modify Teapot, but I am already a teapot.
       content:
         "*/*":
           schema:
-            $ref: "#/components/schemas/APIError"
-    NotAllowedError:
-      description: Request was denied because resource does not support this action, or the
-        action results in an invalid state.
-      content:
-        "*/*":
-          schema:
-            $ref: "#/components/schemas/APIError"
+            $ref: '#/components/schemas/APIError'
   securitySchemes:
     APIKeyHeader:
       type: apiKey
@@ -2112,7 +2345,7 @@ components:
           type: boolean
           description: This signal set has a signal pointing in this direction
         state:
-          $ref: "#/components/schemas/SignalState"
+          $ref: '#/components/schemas/SignalState'
     SignalState:
       type: object
       description: The current state of the signal set
@@ -2207,6 +2440,18 @@ components:
               description: The last time the status of this signal was updated
               type: string
               format: date-time
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: integer
+          title: database entry id
+        moduleName:
+          type: string
+          title: infrastructure type
+        favoriteID: 
+          type: integer
+          title: infrastructure type id
     Intersection:
       type: object
       description: Intersections can be collections of traffic devices such as signals,
@@ -2246,6 +2491,7 @@ components:
             - straight
             - three-way
             - four-way
+            - five-way
           description: Describes the number of road segments entering the intersection
         streetMain:
           type: string
@@ -2258,17 +2504,17 @@ components:
           description: The name of the second street which is considered the cross street
             by the traffic controller
         v2xIntersectionId:
-          type: number
+          type: string
           example: "2550"
           description: "Identifier for this intersection used in V2X messages such as MAP and SPaT."
         state:
-          $ref: "#/components/schemas/IntersectionState"
+          $ref: '#/components/schemas/IntersectionState'
     IntersectionState:
       type: object
       description: The current state of the intersection
       properties:
         updated:
-          description: The last time the status of this rail crossing was updated
+          description: The last time the status of this Intersection was updated
           type: string
           format: date-time
         timePaused:
@@ -2278,6 +2524,9 @@ components:
         timeClearControl:
           description: Time in seconds between a control requests and when the traffic controller automatically clears that request. NTCIP 1202 Backup time. Setting to 0 disables automatic clearing of controls requests at this intersection.
           type: integer
+        flash:
+          type: boolean
+          description: Boolean value representing if the intersection is in flash (night flash) mode.
         callVehicle:
           description: Active Vehicles calls placed on each phase. A bit string representing a true or false value for each of the 8 phases in descending order Ex. 00100001 (Phase 1+6)
           type: string
@@ -2414,7 +2663,7 @@ components:
               - postsignal
               - open
         state:
-          $ref: "#/components/schemas/RailcrossingState"
+          $ref: '#/components/schemas/RailcrossingState'
     RailcrossingState:
       type: object
       description: The current state of the rail crossing
@@ -2537,7 +2786,7 @@ components:
           type: boolean
           description: Does the entrance to the crosswalk feature a tactile surface
         state:
-          $ref: "#/components/schemas/CrosswalkState"
+          $ref: '#/components/schemas/CrosswalkState'
     CrosswalkState:
       type: object
       description: The current state of the crosswalk
@@ -2610,7 +2859,7 @@ components:
           type: boolean
           description: Gate has an audible alarm
         state:
-          $ref: "#/components/schemas/GateState"
+          $ref: '#/components/schemas/GateState'
     GateState:
       type: object
       description: The current state of the gate
@@ -2790,17 +3039,17 @@ components:
             type: array
             description: Cameras included in this sensor package
             items:
-                $ref: "#/components/schemas/SensorCamera"
+                $ref: '#/components/schemas/SensorCamera'
         lidars:
             type: array
             description: LIDARs included in this sensor package
             items:
-                $ref: "#/components/schemas/SensorLIDAR"
+                $ref: '#/components/schemas/SensorLIDAR'
         radars:
             type: array
             description: RADARs included in this sensor package
             items:
-                $ref: "#/components/schemas/SensorRADAR"
+                $ref: '#/components/schemas/SensorRADAR'
     SensorRADAR:
       type: object
       description: A radar sensor located within the facility
@@ -2942,7 +3191,7 @@ components:
           description: A text based description of this facility
         url:
           type: string
-          description: A url with more information about this specific gate
+          description: A url with more information about this facility
         urlMap:
           type: string
           description: A url with to a facility map
@@ -3013,7 +3262,7 @@ components:
                 enum: [DSRC, CV2X]
             messageSet:
               type: string
-              enum: [J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+              enum: [BATTELLE, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
         messageTypes:
           type: string
           enum: [BSM, SPaT, MAP, TIM]
@@ -3054,7 +3303,7 @@ components:
                     enum: [DSRC, CV2X]
                 messageSet:
                   type: string
-                  enum: [J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+                  enum: [BATTELLE, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
             updated:
               description: The last time the status of this device was updated.
               type: string
@@ -3079,11 +3328,14 @@ components:
         messageSet:
           description: The original format this message was broadcast in before decoding.
           type: string
-          enum: [J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+          enum: [BATTELLE, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
         updated:
-          description: The date time of this message.
+          description: The date time of this message was parsed.
           type: string
           format: date-time
+        timeSystem:
+          description: System reported time represented as seconds.milliseconds
+          type: string
         green:
           description: Phases which are Green. A bit string representing a true or false value for each of the 16 phases in descending order Ex. 0000000000100001 (Phase 1+6)
           type: string
@@ -3139,7 +3391,71 @@ components:
                 description: Minimum time (seconds) until next phase for vehicle.
               pedTimeMax:
                 type: number
-                description: Minimum time (seconds) until next phase for vehicle.    
+                description: Minimum time (seconds) until next phase for vehicle.
+    V2XRaw:
+      type: object
+      description: A raw message delivered from a V2X Device.
+      properties:
+        id:
+          description: Identifier, if known of the transmitting RSU or OBU.
+          type: string
+        messageSet:
+          description: The format, if known, this message is broadcast in.
+          type: string
+          enum: [BATTELLE, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+        updated:
+          description: The date and time this message was broadcast by OCTANE.
+          type: string
+          format: date-time
+        data:
+          description: The raw payload of the message, HEX encoded.
+          type: string
+          example: "0000000000100001"
+    V2XBSM:
+      type: object
+      description: Basic Safety Message received from an OBU.
+      properties:
+        id:
+          description: Static identifier if available, else temporary identifier provided by OBU.
+          type: string
+        idTemporary:
+          description: Temporary identifier
+          type: string
+        idFixed:
+          description: Permanent vehicle identifier for known vehicles.
+          type: string
+        messageSet:
+          description: The original format this message was broadcast in before decoding.
+          type: string
+          enum: [J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+        vehicleLength:
+          description: Vehicle length in Meters
+          type: number
+        vehicleWidth:
+          description: Vehicle width in Meters
+          type: number
+        updated:
+          description: The date time this message was sent via OCTANE.
+          type: string
+          format: date-time
+        longitude:
+          type: number
+          description: Longitude of the transmitting V2X device.
+        latitude:
+          type: number
+          description: Latitude of the transmitting V2X device.
+        elevation:
+          type: number
+          description: Elevation of transmitting V2X device. Units increments of 0.1 m
+        speed:
+          type: number
+          description: Reported Velocity of V2X Device. Units increment of 0.02 m/s
+        heading:
+          type: number
+          description: 0 to 359.9875 degrees.
+        angle:
+          type: number
+          description: 0 is true north. 1.5 degree increments.
     APIError:
       type: object
       properties:
