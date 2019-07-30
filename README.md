@@ -37,10 +37,9 @@ Implemented:
 * Gates
 * Crosswalks
 * Rail crossings
-* Sensor enumeration
 * Facility information
-* Initial websocket work
-* Socket IO - Initial
+* Socket IO push notifications and chat/synchronization.
+* Sensor (Packages, Radar, LIDAR, Camera) enumeration.
 * V2X - Experimental
 
 Planned Development Schedule:
