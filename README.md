@@ -24,30 +24,33 @@ The easiest way to visualize the API is by viewing the Mcity implementation on [
 The easiest way to edit the current version is using the [Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/mcity/octane-api/master/api.yaml)
 
 # Status of OCTANE
-Jul 29th, 2019 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development. We are using api-roadmap.yaml to guide the type of functions we plan to implement.
+Dec 12th, 2019 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development. We are using api-roadmap.yaml to guide the type of functions we plan to implement.
 
 We host both a test and production environment of this implementation for users of the test facility.
 The test environment can be found at https://mvillage.um.city/apidocs. The test environment does not support Socket.IO push messages.
 
-The next major part of our work is to finish V2X functionality and move to data collection.
+The next major part of our work is to complete V2X functionality and move to data collection.
 
 Implemented:
 * Intersections
 * Signals
 * Gates
 * Crosswalks
+* Lighting
 * Rail crossings
 * Facility information
 * Socket IO push notifications and chat/synchronization.
-* Sensor (Packages, Radar, LIDAR, Camera) enumeration.
+* Sensor (Packages, Radar, LIDAR, Camera) enumeration and power control.
+* Scenario Storage, status, enumeration.
 * V2X - Experimental
 
 Planned Development Schedule:
-* 08/2019 - V2X
-* 09/2019 - Sensor Data Collection / Weather / Logging / Requests
-* 10/2019 - Robot Control / Segments / Lighting control / Maintenance Equipment
-* 11/2019 - Scenario Storage, Playback, Status /  Weather control
-* 12/2019 - UI Interface for control / First full API spec release (RON 1)
+* 12/2019 - Sensor Data Collection / Weather data / Logging / Requests
+* 01/2020 - Robot Control, Maintenance Equipment, Edge Node control
+* 02/2020 - Segments, AR Traffic/Disaster support.
+* 03/2020 - Scenario Server side processing
+* 04/2020 - Weather control
+* 05/2020 - First full API spec release (RON 1)
 
 # Release schedule / numbering
 The latest version of the API lives in the master branch in api.yaml
@@ -63,6 +66,7 @@ The highest RON branch is the latest standard of the API.
 * 03/24/19 - Release .0.3 with sensor support and enhanced rail functionality.
 * 05/15/19 - Release .0.4 added documentation around Socket.IO connection and Initial V2X work, Intersection Phase documentation of timing/colors.
 * 07/29/19 - Release .0.6 added more V2X endpoints, socketio endpoints for V2X, favorites to management nodes, and fixes to documentation for endpoints, initial data collection enumeration. Adjusted release schedule.
+* 12/12/19 - Release 0.7 fixes for Socket.IO message type declarations, scenario storage and enumeration, lighting modules, power control for intersections, sensors and lights. Additional fixes for V2X radio supported/enabled.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.

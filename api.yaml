@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   description: Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous
     and connected vehicle test facilities/cities.
-  version: 0.0.6
+  version: 0.0.7
   title: Mcity Control API
   contact:
     name: API support
@@ -51,6 +51,11 @@ tags:
     externalDocs:
       description: Discover Mcity's gates
       url: https://members.um.city/wiki/track/gates
+  - name: Lights
+    description: Control and enumeration of lighting 
+    externalDocs:
+      description: Discover Mcity's Lights
+      url: https://members.um.city/wiki/track/lights
   - name: Sensors
     description: Raw sensor feed, enumeration, and control
     externalDocs:
@@ -76,7 +81,195 @@ tags:
     externalDocs:
       description: Discover Mcity's V2X Technology
       url: https://members.um.city/wiki/track/v2x
+  - name: Scenarios
+    description: Management of test case scenarios
+    externalDocs:
+      description: (TODO:) Link to info about scenarios
+      url: https://mcity.umich.edu
 paths:
+  /lights:
+    get:
+      tags:
+        - Lights
+      summary: Return a list of light objects.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  lights:
+                    type: array
+                    description: A list of modules supported by octane
+                    items:
+                      $ref: '#/components/schemas/Light'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Lights
+      summary: Sets features on all configured lights that support a feature.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Default is 0. 1 causes the light to turn on.
+                    dimLevel:
+                      type: integer
+                      description: Default is 0. > 0 setting toggles the dim percentage of the light.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestIDs:
+                    type: array
+                    description: Work request IDs
+                    items:
+                      type: string
+
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /light/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A light ID string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Lights
+      summary: Return a light object with the specified ID.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  light:
+                    type: object
+                    description: A single light
+                    $ref: '#/components/schemas/Light'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Lights
+      summary: Allows control to a light.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  description: Allows control to state of a specific light.
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Default is 0. 1 causes the light to turn on.
+                    dimLevel:
+                      type: integer
+                      description: Default is 0. > 0 setting toggles the dim percentage of the light.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /octane/light:
+    get:
+      tags:
+        - WebSockets-Channels
+      summary: Channel used for publishing light_* events.
+      responses:
+        200:
+          description: Join of Channel
+  /octane/light_update:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted when the state of a light is updated.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Light update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this light fixture.
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/LightState'
+  /octane/light_request:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event published when request to change state was made on this light.
+      responses:
+        200:
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Light'
   /intersections:
     get:
       tags:
@@ -120,6 +313,10 @@ paths:
                       description: Request a reset of the timing on all traffic
                         controllers. Reset is performed before other items in
                         this request.
+                    enabled:
+                      type: boolean
+                      description: Request the signal heads for this intersection be switched 
+                        on or off. This does not shut off the controller.
                     flash:
                       type: boolean
                       description: Toggles the intersections between all way flash and a
@@ -202,6 +399,9 @@ paths:
                     descending order. Phase 1 and 6: 00100001"
                   type: object
                   properties:
+                    enabled:
+                      type: boolean
+                      description: Turn signal heads at this intersection on or off.
                     omit:
                       type: string
                       description: Omit specified phases. A bit string representing request
@@ -414,7 +614,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IntersectionState'
+                type: object
+                description: Intersection event update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this intersection
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/IntersectionState'
   /octane/intersection_request:
     get:
       tags:
@@ -575,7 +787,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SignalState'
+                type: object
+                description: Signal event update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this signal
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/SignalState'
   /octane/signal_request:
     get:
       tags:
@@ -709,7 +933,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RailcrossingState'
+                type: object
+                description: Rail crossing event update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this rail crossing
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/RailcrossingState'
   /octane/railcrossing_request:
     get:
       tags:
@@ -837,7 +1073,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CrosswalkState'
+                type: object
+                description: Crosswalk event update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this crosswalk
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/CrosswalkState'
   /octane/crosswalk_request:
     get:
       tags:
@@ -965,7 +1213,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GateState'
+                type: object
+                description: Gate event update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this gate
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/GateState'
   /octane/gate_request:
     get:
       tags:
@@ -1265,6 +1525,44 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+  /octane/sensor_update:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted when the state of a sensor is updated.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Sensor update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this sensor
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/SensorState'
+  /octane/sensor_request:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event published when request to change state was made on this sensor.
+      responses:
+        200:
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/SensorState'
   /facility:
     get:
       tags:
@@ -1493,9 +1791,9 @@ paths:
                 state:
                   type: object
                   properties:
-                    status:
-                      type: string
-                      enum: [ON, OFF]
+                    enabled:
+                      type: boolean
+                      description: Is the radio on or off?
       responses:
         200:
           description: Success
@@ -1707,11 +2005,22 @@ paths:
         200:
           description: Success
           content:
-            "*/*":
+            application/json:
               schema:
                 type: object
-                items:
-                  $ref: '#/components/schemas/V2X'
+                description: V2X Device update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this V2X Device
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/V2X'
+              
   /octane/v2x_request:
     get:
       tags:
@@ -1897,7 +2206,7 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
-  /management/intersections/polling:
+  /management/polling/intersections:
     patch:
       tags:
         - Management
@@ -1934,6 +2243,43 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+  /management/polling/power:
+            patch:
+              tags:
+                - Management
+              summary: "TOKEN TYPE: ADMIN. Start/Stop polling of intersection power state."
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        state:
+                          type: object
+                          properties:
+                            enabled:
+                              type: boolean
+                              description: Starts or terminates all power polling processes.
+                description: Modifications to the process that controls power updates
+              responses:
+                200:
+                  description: Success
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                        properties:
+                          requestID:
+                            type: string
+                            description: Work request ID.
+                400:
+                  $ref: '#/components/responses/PoorFormError'
+                401:
+                  $ref: '#/components/responses/UnauthorizedError'
+                404:
+                  $ref: '#/components/responses/NotFoundError'
+                500:
+                  description: Internal server error      
   /management/facility/reset:
     post:
       tags:
@@ -2183,6 +2529,155 @@ paths:
       responses:
         200:
           description: Success
+  /scenarios:
+    get:
+      tags:
+        - Scenarios
+      summary: Return a list of scenario objects.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  scenarios:
+                    type: array
+                    description: A list of modules supported by octane
+                    items:
+                      $ref: '#/components/schemas/Scenario'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          description: Internal server error
+  /scenario/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A scenario id string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Scenarios
+      summary: Return a scenario object with the specified id
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  scenario:
+                    type: object
+                    $ref: '#/components/schemas/Scenario'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Scenarios
+      summary: Update an existing scenario
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scenario:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Name of the scenario
+                      workspace:
+                        type: string
+                        description: The XML structure containing the code to be run in the scenario
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scenario:
+                    type: object
+                    $ref: '#/components/schemas/Scenario'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    delete:
+      tags:
+      - Scenarios
+      summary: "Delete a scenario from the database"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A message regarding the status of the deletion.
+                properties:
+                  message:
+                    type: string
+                    description: The delete request was successful.
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /scenario:
+    post:
+      tags:
+        - Scenarios
+      summary: Create a new scenario object
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scenario:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Name of the scenario
+                      workspace:
+                        type: string
+                        description: The XML structure containing the code to be run in the scenario
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scenario:
+                    type: object
+                    $ref: '#/components/schemas/Scenario'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
 
 externalDocs:
   description: Mcity website
@@ -2452,6 +2947,58 @@ components:
         favoriteID: 
           type: integer
           title: infrastructure type id
+    Light:
+      type: object
+      description: Describes a street light within the facility. Non-instrumented street lights reject control requests.  
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this street light
+        uri:
+          type: string
+          description: The URI which can be used to access this street light directly
+        name:
+          type: string
+          description: A text based description of the street light
+        url:
+          type: string
+          description: A url with more information about this specific street light
+        longitude:
+          type: number
+          description: The longitude of the centroid of the street light
+        latitude:
+          type: number
+          description: The latitude of the centroid of the street light
+        maxWattPower:
+          type: number
+          description: The maximum watt power of the street light
+        manufacturer:
+          type: string
+          description: The manufacturer of the street light
+        model:
+          type: string
+          description: The model of the street light
+        controlType:
+          type: string
+          description: The control type of the street light
+        state:
+          $ref: '#/components/schemas/LightState'
+    LightState:
+      type: object
+      description: The current state of the street light
+      properties:
+        updated:
+          description: The last time the status of this street light was updated
+          type: string
+          format: date-time
+        enabled:
+          description: Boolean value representing if the street light is on
+          type: boolean
+        dimLevel:
+          description: The current dim level of the street light
+          type: integer
     Intersection:
       type: object
       description: Intersections can be collections of traffic devices such as signals,
@@ -2517,6 +3064,9 @@ components:
           description: The last time the status of this Intersection was updated
           type: string
           format: date-time
+        enabled:
+          type: boolean
+          description: True / False representing lit state of signal heads in intersection.
         timePaused:
           description: Is the countdown timer between phase changes for this
             intersection paused?
@@ -2923,6 +3473,8 @@ components:
         revision:
           type: string
           description: Sensor revision number/edition information
+        state:
+          $ref: '#/components/schemas/SensorState'
     SensorCamera:
       type: object
       description: A camera sensor located within the facility
@@ -2991,6 +3543,8 @@ components:
         lens:
           type: string
           description: Detail about camera lens information.
+        state:
+          $ref: '#/components/schemas/SensorState'
     SensorPackage:
       type: object
       description: A grouping of sensors located within the facility
@@ -3036,20 +3590,22 @@ components:
           type: string
           description: A URL allowing control or management of the sensor package
         cameras:
-            type: array
-            description: Cameras included in this sensor package
-            items:
-                $ref: '#/components/schemas/SensorCamera'
+          type: array
+          description: Cameras included in this sensor package
+          items:
+            $ref: '#/components/schemas/SensorCamera'
         lidars:
-            type: array
-            description: LIDARs included in this sensor package
-            items:
-                $ref: '#/components/schemas/SensorLIDAR'
+          type: array
+          description: LIDARs included in this sensor package
+          items:
+            $ref: '#/components/schemas/SensorLIDAR'
         radars:
-            type: array
-            description: RADARs included in this sensor package
-            items:
-                $ref: '#/components/schemas/SensorRADAR'
+          type: array
+          description: RADARs included in this sensor package
+          items:
+            $ref: '#/components/schemas/SensorRADAR'
+        state:
+          $ref: '#/components/schemas/SensorState'
     SensorRADAR:
       type: object
       description: A radar sensor located within the facility
@@ -3109,6 +3665,8 @@ components:
         objectedTrackedMax:
           type: integer
           description: The maximum number of objects tracked by the sensor.
+        state:
+          $ref: '#/components/schemas/SensorState'
     SensorLIDAR:
       type: object
       description: A LIDAR sensor located within the facility
@@ -3174,6 +3732,19 @@ components:
         fovVerticalDegree:
           type: number
           description: The vertical FOV of this sensor.
+        state:
+          $ref: '#/components/schemas/SensorState'
+    SensorState:
+      type: object
+      description: The current state of a sensor or sensor housing.
+      properties:
+        enabled:
+          type: boolean
+          description: True / False representing if the sensor presently powered on.
+        updated:
+          description: The last time the state of the sensor was updated.
+          type: string
+          format: date-time
     Facility:
       type: object
       description: Describes the facility.
@@ -3250,19 +3821,19 @@ components:
         type:
           type: string
           enum: [OBU, RSU]
-        radioSupported:
-          type: object
-          description: A list of supported configurations for this device. #This should be an array of objects
-          properties:
-            radio:
-              type: array
-              description: Supported wireless radios
-              items:
+        radiosSupported:
+          type: array
+          description: A list of supported configurations for this device.
+          items:
+            type: object
+            properties:
+              radio:
+                description: Radio Type
                 type: string
                 enum: [DSRC, CV2X]
-            messageSet:
-              type: string
-              enum: [BATTELLE, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+              messageSet:
+                type: string
+                enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
         messageTypes:
           type: string
           enum: [BSM, SPaT, MAP, TIM]
@@ -3288,22 +3859,22 @@ components:
           type: object
           description: The current state of the V2X device
           properties:
-            status:
-              type: string
-              enum: [ON, OFF]
-            radioEnabled:
-              type: object
-              description: The currently configured radio standard.
-              properties:
-                radio:
-                  type: array
-                  description: Supported wireless radios
-                  items:
+            enabled:
+              type: boolean
+              description: Is the radio on or off?
+            radiosEnabled:
+              type: array
+              description: A list of enabled configurations for this device.
+              items:
+                type: object
+                properties:
+                  radio:
+                    description: Radio Type
                     type: string
                     enum: [DSRC, CV2X]
-                messageSet:
-                  type: string
-                  enum: [BATTELLE, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+                  messageSet:
+                    type: string
+                    enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
             updated:
               description: The last time the status of this device was updated.
               type: string
@@ -3328,7 +3899,7 @@ components:
         messageSet:
           description: The original format this message was broadcast in before decoding.
           type: string
-          enum: [BATTELLE, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+          enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
         updated:
           description: The date time of this message was parsed.
           type: string
@@ -3402,7 +3973,7 @@ components:
         messageSet:
           description: The format, if known, this message is broadcast in.
           type: string
-          enum: [BATTELLE, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+          enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
         updated:
           description: The date and time this message was broadcast by OCTANE.
           type: string
@@ -3472,3 +4043,22 @@ components:
         humanMessage:
           type: string
           description: A human readable HTTP error code
+    Scenario:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the scenario
+        name:
+          type: string
+          description: Name of the scenario
+        owner:
+          type: string
+          description: Email of the scenario owner
+        workspace:
+          type: string
+          description: The XML structure containing the code to be run in the scenario
+        lastModified:
+          type: string
+          format: date-time
+          description: Time that the scenario was last modified
