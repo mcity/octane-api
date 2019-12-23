@@ -39,14 +39,14 @@ Implemented:
 * Lighting
 * Rail crossings
 * Facility information
-* Socket IO push notifications and chat/synchronization.
-* Sensor (Packages, Radar, LIDAR, Camera) enumeration and power control.
-* Scenario Storage, status, enumeration.
-* V2X - Experimental
+* Socket IO - Push notifications and chat/synchronization.
+* Sensor (Packages, Radar, LIDAR, Camera) - Enumeration and power control.
+* Scenario Storage -  status, enumeration.
+* V2X - Enumeration and power control, experimental BSM / Push messages
 
 Planned Development Schedule:
-* 12/2019 - Sensor Data Collection / Weather data / Logging / Requests
-* 01/2020 - Robot Control, Maintenance Equipment, Edge Node control
+* 01/2020 - Robot Control, Maintenance Equipment, Edge Node control,
+            Sensor Data Collection / Weather data / Logging / Requests
 * 02/2020 - Segments, AR Traffic/Disaster support.
 * 03/2020 - Scenario Server side processing
 * 04/2020 - Weather control
@@ -66,7 +66,8 @@ The highest RON branch is the latest standard of the API.
 * 03/24/19 - Release .0.3 with sensor support and enhanced rail functionality.
 * 05/15/19 - Release .0.4 added documentation around Socket.IO connection and Initial V2X work, Intersection Phase documentation of timing/colors.
 * 07/29/19 - Release .0.6 added more V2X endpoints, socketio endpoints for V2X, favorites to management nodes, and fixes to documentation for endpoints, initial data collection enumeration. Adjusted release schedule.
-* 12/12/19 - Release 0.7 fixes for Socket.IO message type declarations, scenario storage and enumeration, lighting modules, power control for intersections, sensors and lights. Additional fixes for V2X radio supported/enabled.
+* 12/12/19 - Release .0.7 fixes for Socket.IO message type declarations, scenario storage and enumeration, lighting modules, power control for intersections, sensors and lights. Additional fixes for V2X radio supported/enabled.
+* 12/12/19 - Release .0.8 Power control of sensors updated to add ability to control power at multiple levels through use of patch.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.

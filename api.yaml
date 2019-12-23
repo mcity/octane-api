@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   description: Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous
     and connected vehicle test facilities/cities.
-  version: 0.0.7
+  version: 0.0.8
   title: Mcity Control API
   contact:
     name: API support
@@ -1265,6 +1265,41 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /sensors/packages:
     get:
       tags:
@@ -1282,6 +1317,41 @@ paths:
                     description: A list of Sensor packages
                     items:
                       $ref: '#/components/schemas/SensorPackage'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1315,6 +1385,41 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /sensors/lidars:
     get:
       tags:
@@ -1340,6 +1445,41 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /sensors/radars:
     get:
       tags:
@@ -1357,6 +1497,41 @@ paths:
                     description: A list of Sensor RADAR
                     items:
                       $ref: '#/components/schemas/SensorRADAR'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1397,6 +1572,41 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /sensor/package/{id}:
     parameters:
       - in: path
@@ -1421,6 +1631,41 @@ paths:
                     type: object
                     description: A single sensor package
                     $ref: '#/components/schemas/SensorPackage'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1461,6 +1706,41 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /sensor/lidar/{id}:
     parameters:
       - in: path
@@ -1485,6 +1765,41 @@ paths:
                     type: object
                     description: A single sensor LIDAR
                     $ref: '#/components/schemas/SensorLIDAR'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1525,6 +1840,49 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+    patch:
+      tags:
+        - Sensors
+      summary: Updates a sensor state. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the sensor on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /octane/sensor:
+    get:
+      tags:
+        - WebSockets-Channels
+      summary: Channel used for publishing sensor_* events.
+      responses:
+        200:
+          description: Join of Channel
   /octane/sensor_update:
     get:
       tags:
@@ -1688,6 +2046,41 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+    patch:
+      tags:
+        - V2X
+      summary: Updates all existing and capable V2x RSUs. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the radio on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /v2x/obus:
     get:
       tags:
@@ -1705,6 +2098,41 @@ paths:
                     description: A list of V2X OBU devices.
                     items:
                       $ref: '#/components/schemas/V2X'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - V2X
+      summary: Updates an existing and capable V2X OBUs. Returns request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the radio on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1737,6 +2165,42 @@ paths:
                     type: object
                     description: A single V2X device
                     $ref: '#/components/schemas/V2X'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - V2X
+      summary: Updates an existing v2x status, allowing for triggering. Returns
+        request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Is the radio on or off?
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1899,6 +2363,9 @@ paths:
                 state:
                   type: object
                   properties:
+                    enabled:
+                      type: boolean
+                      description: is the radio on or off?
                     longitude:
                       type: number
                       description: The longitude of the V2X device.
