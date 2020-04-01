@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   description: Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous
     and connected vehicle test facilities/cities.
-  version: 0.0.8
+  version: 0.0.9
   title: Mcity Control API
   contact:
     name: API support
@@ -13,7 +13,7 @@ info:
 servers:
   - url: https://mcity.um.city/api
     description: Production server
-  - url: https://mvillage.um.city/api
+  - url: https://octane.mvillage.um.city/api
     description: Test server
   - url: http://localhost:5000/api
     description: Dev server
@@ -29,12 +29,12 @@ tags:
   - name: Intersections
     description: Management of intersections
     externalDocs:
-      description: Discover Mcity's intersections
+      description: Mcity's intersections
       url: https://members.um.city/wiki/track/intersections
   - name: Signals
     description: Management of traffic signals
     externalDocs:
-      description: Discover Mcity's traffic signals
+      description: Mcity's traffic signals
       url: https://members.um.city/wiki/track/signals
   - name: Rail
     description: Management of rail crossings.
@@ -44,49 +44,203 @@ tags:
   - name: Crosswalks
     description: Management of crosswalks
     externalDocs:
-      description: Discover Mcity's crosswalks
+      description: Mcity's crosswalks
       url: https://members.um.city/wiki/track/crosswalks
   - name: Gates
     description: Control of facility gates
     externalDocs:
-      description: Discover Mcity's gates
+      description: Mcity's gates
       url: https://members.um.city/wiki/track/gates
+  - name: Garages
+    description: Control of facility garage bays
+    externalDocs:
+      description: Mcity's Garages
+      url: https://members.um.city/wiki/track
   - name: Lights
     description: Control and enumeration of lighting 
     externalDocs:
-      description: Discover Mcity's Lights
+      description: Mcity's Lights
       url: https://members.um.city/wiki/track/lights
+  - name: Safety
+    description: Management of safety and maintenance equipment
+    externalDocs:
+      description: Mcity's safety equipment
+      url: https://members.um.city/wiki/track/safety
   - name: Sensors
     description: Raw sensor feed, enumeration, and control
     externalDocs:
-      description: Discover Mcity's sensors
+      description: Mcity's sensors
       url: https://members.um.city/wiki/track/sensors
+  - name: V2X
+    description: V2X RSU and OBU management, near real time messages available via WebSocket
+    externalDocs:
+      description: V2X Technology
+      url: https://members.um.city/wiki/track/v2x
   - name: WebSockets-Channels
-    description: EXPERIMENTAL - Socket.IO websocket supported channels documented as \</namespace>/\<channel>/. Websocket testing is not supported within this UI.
+    description: Socket.IO websocket supported channels documented as \</namespace>/\<channel>/. Websocket testing is not supported within this UI.
     externalDocs:
       description: Socket.io documentation
       url: https://socket.io/
   - name: WebSockets-Events
-    description: EXPERIMENTAL - Socket.IO websocket events supported by socket-io. Documented as \</namespace>/\<event>/. Websocket testing is not supported within this UI.
+    description: Socket.IO websocket events supported by socket-io. Documented as \</namespace>/\<event>/. Websocket testing is not supported within this UI.
     externalDocs:
       description: Socket.io documentation
       url: https://socket.io/
   - name: Management
     description: Functions reserved for facility administration and system processes.
     externalDocs:
-      description: The Mcity API system process.
+      description: Recommended, but optional, endpoints for Managing OCTANE implementations.
       url: https://mcity.umich.edu/
-  - name: V2X
-    description: EXPERIMENTAL - V2X RSU and OBU management, near real time messages available via WebSocket
-    externalDocs:
-      description: Discover Mcity's V2X Technology
-      url: https://members.um.city/wiki/track/v2x
   - name: Scenarios
     description: Management of test case scenarios
     externalDocs:
-      description: (TODO:) Link to info about scenarios
+      description: Save, restore, and run test case scripts to setup a facility in a specific way and trigger on events.
       url: https://mcity.umich.edu
+  - name: Sessions
+    description: Manage active user sessions, session logging, and session notification.
+    externalDocs:
+      description: Mcity Scheduling
+      url: https://scheduling.umich.edu
 paths:
+  /garages:
+    get:
+      tags:
+        - Garages
+      summary: Return a list of garages
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  garages:
+                    type: array
+                    description: A list of garages
+                    items:
+                      $ref: '#/components/schemas/Garage'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /garage/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A garage ID string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Garages
+      summary: Return a garage object with the specified ID.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  garage:
+                    type: object
+                    description: A single garage
+                    $ref: '#/components/schemas/Garage'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Garages
+      summary: Allows control of a garage.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  description: Allows control to state of a specific garage state
+                  type: object
+                  properties:
+                    open:
+                      type: boolean
+                      description: Default is false, set to true to open the door.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /octane/garage:
+    get:
+      tags:
+        - WebSockets-Channels
+      summary: Channel used for publishing garage_* events.
+      responses:
+        200:
+          description: Join of Channel
+  /octane/garage_update:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted when the state of a garage is updated.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Garage update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this light fixture.
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/GarageState'
+  /octane/garage_request:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event published when request to change state was made on this garage.
+      responses:
+        200:
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Garage'
   /lights:
     get:
       tags:
@@ -101,7 +255,7 @@ paths:
                 properties:
                   lights:
                     type: array
-                    description: A list of modules supported by octane
+                    description: A list of Lights
                     items:
                       $ref: '#/components/schemas/Light'
         400:
@@ -487,11 +641,13 @@ paths:
           description: Success
           content:
             application/json:
-              schema:
-                type: array
-                description: A list of phases for this intersection
-                items:
-                  $ref: '#/components/schemas/Phase'
+              schema:                
+                properties:
+                  phases:
+                    type: array
+                    description: A list of phases for this intersection
+                    items:
+                      $ref: '#/components/schemas/Phase'
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -552,10 +708,12 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                description: A list of crosswalks within this intersection
-                items:
-                  $ref: '#/components/schemas/Crosswalk'
+                properties:
+                  crosswalks:
+                    type: array
+                    description: A list of crosswalks within this intersection
+                    items:
+                      $ref: '#/components/schemas/Crosswalk'
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1921,11 +2079,11 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/SensorState'
-  /facility:
+  /safety:
     get:
       tags:
-        - Facility
-      summary: Return information about the facility and current reservation.
+        - Safety
+      summary: Return a list of all safety equipment
       responses:
         200:
           description: Success
@@ -1933,11 +2091,322 @@ paths:
             application/json:
               schema:
                 properties:
-                  facility:
+                  messageboards:
                     type: array
-                    description: A list of modules supported by octane
+                    description: A list of safety devices supported by octane
+                    items:
+                      $ref: '#/components/schemas/SafetyEquipment'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /safety/messageboards:
+    get:
+      tags:
+        - Safety
+      summary: Return a list of messageboard objects
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  messageboards:
+                    type: array
+                    description: A list of messageboards supported by octane
+                    items:
+                      $ref: '#/components/schemas/MessageBoard'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /safety/arrowboards:
+    get:
+      tags:
+        - Safety
+      summary: Return a list of arrowboard objects
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  messageboards:
+                    type: array
+                    description: A list of arrowboards supported by octane
+                    items:
+                      $ref: '#/components/schemas/ArrowBoard'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /safety/messageboard/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A unique identifier for the messageboard
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Safety
+      summary: Return the current location and text on the message board
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageBoard'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Safety
+      summary: Update the content on a message board
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  description: Controls the text on, and expected location of, the message board
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                      description: Content text to display on the message board
+                    latitude:
+                      type: number
+                      description: The current location of the message board
+                    longitude:
+                      type: number
+                      description: The current location of the message board
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /safety/arrowboard/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A unique identifier for the arrowboard
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Safety
+      summary: Return the current location and text on the arrow board
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrowBoard'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Safety
+      summary: Update the pattern on an arrow board
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  description: Controls the pattern on, and expected location of, an arrow board.
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                      enum: [FLASHING_RIGHT,SEQUENTIAL_RIGHT,FLASHING_LEFT,SEQUENTIAL_LEFT,FLASHING_DOUBLE,
+                             SEQUENTIAL_DOUBLE,FOUR_CORNER,BAR,OFF]
+                    latitude:
+                      type: number
+                      description: The current location of the message board
+                    longitude:
+                      type: number
+                      description: The current location of the message board
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /facilities:
+    get:
+      tags:
+        - Facility
+      summary: Return information about facilities managed by this OCTANE instance.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  facilities:
+                    type: array
+                    description: Facilities configured in this octane instance that the user has access to.
                     items:
                       $ref: '#/components/schemas/Facility'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /facility:
+    get:
+      tags:
+        - Facility
+      summary: Return information about the primary reservation facility and current reservation.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Facility'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /facility/chat:
+    post:
+      tags:
+        - Facility
+      summary: Post a message to the facility chat through ReST.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A message that a user wants to send via facility chat.
+              properties:
+                message:
+                  type: string
+                  description: The message to be sent to other users of the system.
+                user:
+                  type: string
+                  description: Username to send with message.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The message sent.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /facility/notification:
+    post:
+      tags:
+        - Facility
+      summary: "TOKEN TYPE: ADMIN. Post a message to the facility notification system."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A message that a user wants to send via facility chat.
+              properties:
+                message:
+                  type: string
+                  description: The message to be sent to other users of the system.
+                type:
+                  type: string
+                  description: A type describing the message
+                  enum: [NOTIFY, WEATHER, SCHEDULE]
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The notification sent.
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1963,11 +2432,9 @@ paths:
         200:
           description: Success
           content:
-            "*/*":
+            application/json:
               schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/Facility'
+                $ref: '#/components/schemas/FacilityMessage'
   /octane/facility_request:
     get:
       tags:
@@ -1981,7 +2448,7 @@ paths:
               schema:
                 type: object
                 items:
-                  $ref: '#/components/schemas/Facility' 
+                  $ref: '#/components/schemas/Facility'
   /octane/facility_update:
     get:
       tags:
@@ -2527,7 +2994,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/V2XRaw"
+                $ref: '#/components/schemas/V2XRaw'
   /octane/v2x_SPaT:
     get:
       tags:
@@ -2571,11 +3038,11 @@ paths:
                     description: A list of modules supported by octane
                     items:
                       type: string
-                      example: [Crosswalk, Intersections, V2X]
+                      enum: [Crosswalk, Intersections, V2X]
         400:
-          $ref: "#/components/responses/PoorFormError"
+          $ref: '#/components/responses/PoorFormError'
         401:
-          $ref: "#/components/responses/UnauthorizedError"
+          $ref: '#/components/responses/UnauthorizedError'
         500:
           description: Internal server error
   /management/favorites:
@@ -2710,43 +3177,6 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
-  /management/polling/power:
-            patch:
-              tags:
-                - Management
-              summary: "TOKEN TYPE: ADMIN. Start/Stop polling of intersection power state."
-              requestBody:
-                content:
-                  application/json:
-                    schema:
-                      type: object
-                      properties:
-                        state:
-                          type: object
-                          properties:
-                            enabled:
-                              type: boolean
-                              description: Starts or terminates all power polling processes.
-                description: Modifications to the process that controls power updates
-              responses:
-                200:
-                  description: Success
-                  content:
-                    application/json:
-                      schema:
-                        type: object
-                        properties:
-                          requestID:
-                            type: string
-                            description: Work request ID.
-                400:
-                  $ref: '#/components/responses/PoorFormError'
-                401:
-                  $ref: '#/components/responses/UnauthorizedError'
-                404:
-                  $ref: '#/components/responses/NotFoundError'
-                500:
-                  description: Internal server error      
   /management/facility/reset:
     post:
       tags:
@@ -2828,11 +3258,107 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
-  /management/token:
+
+  /sessions:
+    get:
+      tags:
+        - Sessions
+      summary: "TOKEN TYPE: ADMIN. Lists all active sessions across all facilities."
+      description: Lists sessions and their users. A list of currently active, valid, and non-expired sessions.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  sessions:
+                    type: array
+                    description: A list of sessions managed by this octane instance
+                    items:
+                      type: object
+                      properties:
+                        email:
+                          type: string
+                          description: Email address of session owner.
+                        sessionType:
+                          type: string
+                          description: Event Identifier
+                        dateValid:
+                          type: string
+                          format: date-time
+                          description: UTC valid date time
+                          example: "2019-03-16T16:47:04.123-4:00"
+                        dateExpire:
+                          type: string
+                          format: date-time
+                          description: UTC expiration date time
+                          example: "2019-03-16T16:47:04.123-4:00"
+                        facilities:
+                          type: array
+                          items:
+                            type: string
+                            description: Name of the facility which session has access.
+                            enum: [Mcity, Urban, Highway, Garage]
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /session:
+    get:
+      tags:
+        - Sessions
+      summary: "Current session information."
+      description: Information about the current requesting user session.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  session:
+                    type: object
+                    description: A set of information about the user session.
+                    properties:
+                      email:
+                        type: string
+                        description: Email address of session owner.
+                      sessionType:
+                        type: string
+                        description: Event Identifier
+                      dateValid:
+                        type: string
+                        format: date-time
+                        description: UTC valid date time
+                        example: "2019-03-16T16:47:04.123-4:00"
+                      dateExpire:
+                        type: string
+                        format: date-time
+                        description: UTC expiration date time
+                        example: "2019-03-16T16:47:04.123-4:00"
+                      facilities:
+                        type: array
+                        items:
+                          type: string
+                          description: Name of the facility which session has access.
+                          enum: [Mcity, Urban, Highway, Garage]
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error        
     post:
       tags:
-        - Management
-      summary: "TOKEN TYPE: TOKEN. Creates a new USER type token with API access
+        - Sessions
+      summary: "TOKEN TYPE: SCHEDULING. Creates a new USER type token with API access
         between a specific date and time."
       requestBody:
         content:
@@ -2856,7 +3382,13 @@ paths:
                   format: date-time
                   description: UTC expiration date time
                   example: "2019-03-16T16:47:04.123-4:00"
-        description: Request for a new token to be created. Dates are in format of 2019-03-16T16:47:04.123-4:00
+                facilities:
+                  type: array
+                  items:
+                    type: string
+                    description: Name of the facility which session has access.
+                    enum: [Mcity, Urban, Highway, Garage]
+        description: Request for a new token to be created. Dates are in format of 2019-03-16T16:47:04.123-04:00
       responses:
         200:
           description: Success
@@ -2876,11 +3408,31 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+  /octane/ipc:
+    get:
+      tags:
+        - WebSockets-Channels
+      summary: Channel for IPC/Timing messages. Publishes user_* events.
+      responses:
+        200:
+          description: Join of Channel
+  /octane/ipc_message:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted to other users when a client emits an IPC message to others listening.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IPCMessage'
   /octane/user:
     get:
       tags:
         - WebSockets-Channels
-      summary: Channel for IPC, Timing, and direct messages. Publishes user_* events.
+      summary: Channel for direct messages. Publishes user_* events.
       responses:
         200:
           description: Join of Channel
@@ -2895,12 +3447,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                description: A message a user sent.
-                properties:
-                  message:
-                    type: string
-                    description: The message to be sent to other users.
+                $ref: '#/components/schemas/UserMessage'
     post:
       tags:
         - WebSockets-Events
@@ -2918,6 +3465,9 @@ paths:
                 message:
                   type: string
                   description: The message to be sent to other users of the system.
+                user:
+                  type: string
+                  description: Username to send with message. Optional.
   /octane/join:
     get:
       tags:
@@ -2968,6 +3518,56 @@ paths:
                 channel:
                   type: string
                   description: Channel to leave.
+  /octane/auth:
+    post:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted to server when user wishes to authenticate.
+      responses:
+        200:
+          description: Success
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: The channel a user wishes to leave
+              properties:
+                x-api-key:
+                  type: string
+                  description: The authentication token to login to the socket feed with.
+  /octane/auth_ok:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted on success of authentication.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: OK
+  /octane/auth_fail:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted to user if authentication through socket.io fails. User is then disconnected.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message describing why the authentication failed.
   /octane/channels:
     get:
       tags:
@@ -3158,27 +3758,21 @@ components:
           schema:
             $ref: '#/components/schemas/APIError'
     PoorFormError:
-      description: 'Request to this endpoint was not appropriately formed.'
+      description: Request to this endpoint was not appropriately formed.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/APIError'
     NotFoundError:
-      description: 'Requested ID does not exist.'
+      description: Requested ID does not exist.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/APIError'
     NotAllowedError:
-      description: 'Request was denied because resource does not support this action, or the action results in an invalid state.'
+      description: Request was denied because resource does not support this action, or the action results in an invalid state.
       content:
         application/json:
-          schema:
-            $ref: '#/components/schemas/APIError'
-    TeapotError:
-      description: Request to create/modify Teapot, but I am already a teapot.
-      content:
-        "*/*":
           schema:
             $ref: '#/components/schemas/APIError'
   securitySchemes:
@@ -3225,6 +3819,50 @@ components:
             - left
             - right
             - through
+        stopBar:
+          type: object
+          description: A list of lat/long points representing the upper left, upper right, lower left, and lower right corners of the stop bar corresponding to the phase.
+          properties:
+            ul:
+              type: object
+              description: A latitude/longitude pair representing the upper left point of the stop bar.
+              properties:
+                latitude:
+                  type: number
+                  description: Upper left latitude stop bar location
+                longitude:
+                  type: number
+                  description: Upper left longitude stop bar location
+            ur:
+              type: object
+              description: A latitude/longitude pair representing the upper right point of the stop bar.
+              properties:
+                latitude:
+                  type: number
+                  description: Upper right latitude stop bar location
+                longitude:
+                  type: number
+                  description: Upper right longitude stop bar location
+            ll:
+              type: object
+              description: A latitude/longitude pair representing the lower left point of the stop bar.
+              properties:
+                latitude:
+                  type: number
+                  description: Lower left latitude stop bar location
+                longitude:
+                  type: number
+                  description: Lower left longitude stop bar location
+            lr:
+              type: object
+              description: A latitude/longitude pair representing the lower right point of the stop bar.
+              properties:
+                latitude:
+                  type: number
+                  description: Lower right latitude stop bar location
+                longitude:
+                  type: number
+                  description: Lower right longitude stop bar location
     Signal:
       type: object
       description: Describes a collection of signal heads facing a specific direction/mount
@@ -3466,6 +4104,47 @@ components:
         dimLevel:
           description: The current dim level of the street light
           type: integer
+
+    Garage:
+      type: object
+      description: Describes a garage state.  
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this garage
+        uri:
+          type: string
+          description: The URI which can be used to access this garage directly
+        name:
+          type: string
+          description: A text based description of the garage
+        url:
+          type: string
+          description: A url with more information about this specific garage
+        longitude:
+          type: number
+          description: The longitude of the centroid of the garage
+        latitude:
+          type: number
+          description: The latitude of the centroid of the garage
+        state:
+          $ref: '#/components/schemas/GarageState'
+    GarageState:
+      type: object
+      description: The current state of the garage
+      properties:
+        updated:
+          description: The last time the status of this garage was updated
+          type: string
+          format: date-time
+        open:
+          description: Boolean value representing if the door is open
+          type: boolean
+        activated:
+          description: Boolean value representing if the door in motion
+          type: boolean
     Intersection:
       type: object
       description: Intersections can be collections of traffic devices such as signals,
@@ -3499,6 +4178,64 @@ components:
             - yield
             - ramp
           description: The intersection instrument type
+        phases:
+          type: array
+          description: A listing of configured non-conflicting sets of phases that can be used for control.
+          items:
+            type: object
+            properties:
+              number:
+                type: integer
+                description: Phase ID number
+              turn:
+                type: string
+                description: The direction of turn phase is manages.
+                enum: [through, left, right]
+              bound:
+                type: string
+                description: The direction of traffic flow this lane is bound to.
+                example: "south"
+              stop_bar:
+                type: object
+                description: A list of lat/lng points representing the upper left, upper right, lower left, and lower right corners of the stop bar corresponding to the phase.
+                properties:
+                  ul_lat:
+                    type: number
+                    description: Upper left latitude stop bar location
+                  ul_lng:
+                    type: number
+                    description: Upper left longitude stop bar location
+                  ur_lat:
+                    type: number
+                    description: Upper right latitude stop bar location
+                  ur_lng:
+                    type: number
+                    description: Upper right longitude stop bar location
+                  ll_lat:
+                    type: number
+                    description: Lower left latitude stop bar location
+                  ll_lng:
+                    type: number
+                    description: Lower left longitude stop bar location
+                  lr_lat:
+                    type: number
+                    description: Lower right latitude stop bar location
+                  lr_lng:
+                    type: number
+                    description: Lower right longitude stop bar location
+        stages:
+          type: array
+          description: A listing of configured non-conflicting sets of phases that can be used for control.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: A name given to describe the stage of this light.
+              controlGroup:
+                type: string
+                description: Bitstring descending order 8 phases.
+                example: "00100101"
         style:
           type: string
           enum:
@@ -4212,6 +4949,86 @@ components:
           description: The last time the state of the sensor was updated.
           type: string
           format: date-time
+    ArrowBoard:
+      type: object
+      description: Roadside arrow board
+      required:
+        - id
+        - unitID
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this sign board
+        unitID:
+          type: string
+          description: The unit ID that the sign board responds with.  This is the manufacturers identification number.
+        name:
+          type: string
+          description: A text based description of this arrow board
+        uri:
+          type: string
+          description: The URI which can be used to communicate with the arrow board
+        url:
+          type: string
+          description: A url with more information about this arrow board
+        state:
+          $ref: '#/components/schemas/SignBoardState'
+    SafetyEquipment:
+      type: object
+      description: Safety equipment - message board, arrow board, cone, barrel
+      required:
+        - id
+        - unitID
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this piece of safety equipment
+        unitID:
+          type: string
+          description: The unit ID that the safety equipment responds with.
+        name:
+          type: string
+          description: A text based description of the safety equipment.
+    MessageBoard:
+      type: object
+      description: Roadside message board
+      required:
+        - id
+        - unitID
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this message board
+        unitID:
+          type: string
+          description: The unit ID that the sign board responds with.  This is the manufacturers identification number.
+        name:
+          type: string
+          description: A text based description of this message board
+        uri:
+          type: string
+          description: The URI which can be used to communicate with the message board
+        url:
+          type: string
+          description: A url with more information about this message board
+        state:
+          $ref: '#/components/schemas/SignBoardState'
+    SignBoardState:
+      type: object
+      description: The current state of the sign board
+      properties:
+        content_type:
+          type: text
+          description: The current content type ('text' or 'pattern') of the sign board
+        content:
+          type: string
+          description: The current content of the sign board
+        longitude:
+          type: number
+          description: The longitude of the centroid of the sign board
+        latitude:
+          type: number
+          description: The latitude of the centroid of the sign board
     Facility:
       type: object
       description: Describes the facility.
@@ -4232,13 +5049,37 @@ components:
           description: A url with more information about this facility
         urlMap:
           type: string
-          description: A url with to a facility map
+          description: A url to a facility map
         longitude:
           type: number
           description: The longitude of the centroid of the facility
         latitude:
           type: number
           description: The latitude of the centroid of the facility
+        overlays:
+          type: array
+          description: Array representing all configured overlays for use in map software of the facility.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: A name describing the contends of the overlay.
+              description:
+                type: string
+                description: A description of the contents of this overlay.
+              longitude:
+                type: number
+                description: The longitude of the centroid of the overlay
+              latitude:
+                type: number
+                description: The latitude of the centroid of the overlay
+              url:
+                type: string
+                description: A url pointing to the overlay file.
+              zLayer:
+                type: integer
+                description: An integer describing stacking orders for overlays (0 base layer-100 highest)
         contactMaintenance:
           type: string
           description: Facility Maintenance contact
@@ -4529,3 +5370,44 @@ components:
           type: string
           format: date-time
           description: Time that the scenario was last modified
+    UserMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          description: A message
+        user:
+          type: string
+          description: The user name provided as the message sender.
+        time:
+          type: string
+          format: date-time
+          description: Time that the message was sent.
+    IPCMessage:
+      type: object
+      properties:
+        payload:
+          type: string
+          description: A message payload object to be shared related to the listed type.
+        type:
+          type: string
+          description: A string representing the type of IPC message. Reserved IPC types are shown below. Contact mcity-engineering@umich.edu to request a reserved type.
+          enum: [POI, OVERLAY, SCENARIO]
+        time:
+          type: string
+          format: date-time
+          description: Time that the message was sent to the server. This is server generated.
+    FacilityMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          description: A message containing a notification.
+        type:
+          type: string
+          description: A type describing the message
+          enum: [NOTIFY, WEATHER, SCHEDULE]
+        time:
+          type: string
+          format: date-time
+          description: Time that the notification was sent.
