@@ -2784,6 +2784,46 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+  /v2x/rsu/{id}/psm:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A V2X RSU ID number.
+        schema:
+          type: integer
+          minimum: 1
+    post:
+      tags:
+        - V2X
+      summary: For RSUs with support, pack posted data into active protocol format and broadcasts the PSM.
+        request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A V2X PSM to be sent.
+              $ref: '#/components/schemas/V2XPSM'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /v2x/obu/{id}:
     parameters:
       - in: path
@@ -3021,6 +3061,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/V2XBSM'
+  /octane/v2x_PSM:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: On receipt of a V2X PSM message, this event is emitted with a parsed version of the message.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2XPSM'
   /management/modules:
     get:
       tags:
@@ -5335,6 +5387,44 @@ components:
         angle:
           type: number
           description: 0 is true north. 1.5 degree increments.
+    V2XPSM:
+      type: object
+      description: Personal Safety Message received from an OBU.
+      properties:
+        id:
+          description: Static identifier if available, else temporary identifier provided by Personal Safety Device.
+          type: string
+        messageSet:
+          description: The original format this message was broadcast in before decoding.
+          type: string
+          enum: [J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+        updated:
+          description: The date time this message was sent via OCTANE.
+          type: string
+          format: date-time
+        longitude:
+          type: number
+          description: Longitude of the transmitting V2X device.
+        latitude:
+          type: number
+          description: Latitude of the transmitting V2X device.
+        elevation:
+          type: number
+          description: Elevation of transmitting V2X device. Units increments of 0.1 m
+        speed:
+          type: number
+          description: Reported Velocity of V2X Device. Units increment of 0.02 m/s
+        heading:
+          type: number
+          description: 0 to 359.9875 degrees.
+        type:
+          type: string
+          description: The personal safety message user type
+          enum: [pedestrian, bicyclist, worker, animal, godzilla]
+        size:
+          type: string
+          description: Estimated size of the PSM. Large is > 1.5m
+          enum: [unknown, small, large]
     APIError:
       type: object
       properties:
