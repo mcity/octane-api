@@ -57,7 +57,6 @@ Planned Development Schedule:
 # Release schedule / numbering
 The latest version of the API lives in the master branch in api.yaml
 
-The broad road map for planned features is loosely specified in api-roadmap.yaml
 
 Released are granted a Release Order Number (RON) and each RON will have it's own branch at time of release. 
 The highest RON branch is the latest standard of the API.
@@ -70,7 +69,7 @@ The highest RON branch is the latest standard of the API.
 * 07/29/19 - Release .0.6 added more V2X endpoints, socketio endpoints for V2X, favorites to management nodes, and fixes to documentation for endpoints, initial data collection enumeration. Adjusted release schedule.
 * 12/12/19 - Release .0.7 fixes for Socket.IO message type declarations, scenario storage and enumeration, lighting modules, power control for intersections, sensors and lights. Additional fixes for V2X radio supported/enabled.
 * 12/12/19 - Release .0.8 Power control of sensors updated to add ability to control power at multiple levels through use of patch.
-* 04/31/20 - Release .0.9 Add lighting control, garage door control, and initial implementations for safety devices. Multi-tenant facility support was added along with session management endpoints. Initial point of interest socket messages, along with work to support multiple map overlays at a facility. Intersection support has been enhanced by adding stop block enumeration for intersections with support.
+* 03/31/20 - Release .0.9 Add lighting control, garage door control, and initial implementations for safety devices. Multi-tenant facility support was added along with session management endpoints. Initial point of interest socket messages, along with work to support multiple map overlays at a facility. Intersection support has been enhanced by adding stop block enumeration for intersections with support.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.
