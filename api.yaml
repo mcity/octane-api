@@ -5070,7 +5070,8 @@ components:
       description: The current state of the sign board
       properties:
         content_type:
-          type: text
+          type: string
+          enum: [text, pattern]
           description: The current content type ('text' or 'pattern') of the sign board
         content:
           type: string
