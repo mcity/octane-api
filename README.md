@@ -23,12 +23,14 @@ The easiest way to visualize the API is by viewing the Mcity implementation on [
 You can use the [Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/mcity/octane-api/master/api.yaml) to work with this spec.
 
 # Status of OCTANE
-April 10th, 2020 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development.
+July 14th, 2020 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development.
 
 We host both a test and production environment of this implementation for users of the test facility.
 The test environment can be found at https://octane.mvillage.um.city/apidocs.
 
-The next major part of our work is to improve V2X functionality and create additional triggers to prepare for server side processing of scripts.
+The Mcity implementation of this API and supporting tools can be licensed from the University of Michigan. Please contact us for more information.
+
+Our current focus is on the addition of robotic platforms and server side scenario execution via control server or Edge node.
 
 Implemented:
 * Facility - Multi-facility
@@ -45,13 +47,14 @@ Implemented:
 * Sensor (Packages, Radar, LIDAR, Camera) - Enumeration and power control.
 * Sessions - Management and multi-tenant support
 * Scenario Storage -  status, enumeration.
-* V2X - Enumeration and power control, experimental BSM / Push messages
+* V2X - Enumeration and power control, TSCBM/SPaT/BSM/BSM send/receive
+* Maintenance devices - Lawnmowers
+* Triggers
 
 Planned Development Schedule:
-* 04/2020 - Safety Devices, Weather state
-* 05/2020 - Edge Nodes, V2X improvements, Robot Control
-* 06/2020 - Scenario Server side processing, Sensor Data Collection, Logging / Requests
-* 08/2020 - First full API spec release (RON 1)
+* 08/2020 - Edge Nodes, Robot Control, Weather state, Logging / Requests
+* 09/2020 - Scenario Server side processing, Sensor Data Collection
+* 11/2020 - First full API spec release (RON 1)
 
 # Release schedule / numbering
 The latest version of the API lives in the master branch in api.yaml
@@ -70,6 +73,7 @@ The highest RON branch is the latest standard of the API.
 * 12/12/19 - Release .0.8 Power control of sensors updated to add ability to control power at multiple levels through use of patch.
 * 03/31/20 - Release .0.9 Add lighting control, garage door control, and initial implementations for safety devices. Multi-tenant facility support was added along with session management endpoints. Initial point of interest socket messages, along with work to support multiple map overlays at a facility. Intersection support has been enhanced by adding stop block enumeration for intersections with support.
 * 04/10/20 - Cleanup of this repository and additional documentation. Additions to .9 spec to handle PSM V2X broadcast.
+* 07/14/20 - Adds .10 spec to handle cleaner PSM/SPaT/BSM broadcast and receive. Addition of maintenance device endpoints.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   description: Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous
     and connected vehicle test facilities/cities.
-  version: 0.0.9
+  version: 0.0.10
   title: Mcity Control API
   contact:
     name: API support
@@ -57,15 +57,20 @@ tags:
       description: Mcity's Garages
       url: https://members.um.city/wiki/track
   - name: Lights
-    description: Control and enumeration of lighting 
+    description: Control and enumeration of lighting
     externalDocs:
       description: Mcity's Lights
       url: https://members.um.city/wiki/track/lights
   - name: Safety
-    description: Management of safety and maintenance equipment
+    description: Management of safety equipment - arrow boards, message boards, cones
     externalDocs:
       description: Mcity's safety equipment
       url: https://members.um.city/wiki/track/safety
+  - name: Maintenance
+    description: Maintenance equipment - internal devices to maintain the facility
+    externalDocs:
+      description: Mcity's maintenance equipment
+      url: https://members.um.city/wiki/track/maintenance
   - name: Sensors
     description: Raw sensor feed, enumeration, and control
     externalDocs:
@@ -469,7 +474,7 @@ paths:
                         this request.
                     enabled:
                       type: boolean
-                      description: Request the signal heads for this intersection be switched 
+                      description: Request the signal heads for this intersection be switched
                         on or off. This does not shut off the controller.
                     flash:
                       type: boolean
@@ -481,7 +486,7 @@ paths:
                         all lights to freeze in current state when set True.
                     timeClearControl:
                       type: integer
-                      description: Default is 0 - disabled. > 0 setting causes 
+                      description: Default is 0 - disabled. > 0 setting causes
                         control commands to be automatically cleared this
                         input number of seconds.
       responses:
@@ -497,7 +502,7 @@ paths:
                     description: Work request IDs
                     items:
                       type: string
-                        
+
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -641,13 +646,64 @@ paths:
           description: Success
           content:
             application/json:
-              schema:                
+              schema:
                 properties:
                   phases:
                     type: array
                     description: A list of phases for this intersection
                     items:
                       $ref: '#/components/schemas/Phase'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /intersection/{id}/preempt/{preempt_id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: An intersection ID string.
+        schema:
+          type: string
+          minimum: 1
+      - in: path
+        name: preempt_id
+        required: true
+        description: An intersection preempt ID.
+        schema:
+          type: string
+          minimum: 1
+    patch:
+      tags:
+        - Intersections
+      summary: Allows enabling/disabling preconfigured preempt at an intersection.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Enables or disables a given preempt configuration.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -1190,7 +1246,7 @@ paths:
                 state:
                   type: object
                   properties:
-                    pedestrianCall:
+                    callPedestrian:
                       type: boolean
                       description: Activate crosswalk cycle
       responses:
@@ -2295,6 +2351,121 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
+  /maintenance:
+    get:
+      tags:
+        - Maintenance
+      summary: Return a list of all maintenance equipment
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  maintenance:
+                    type: array
+                    description: A list of maintenance devices supported by octane
+                    items:
+                      $ref: '#/components/schemas/MaintenanceEquipment'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /maintenance/lawnmowers:
+    get:
+      tags:
+        - Maintenance
+      summary: Return a list of lawnmower objects
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  lawnmowers:
+                    type: array
+                    description: A list of lawnmowers supported by octane
+                    items:
+                      $ref: '#/components/schemas/LawnMower'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /maintenance/lawnmower/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A unique identifier for the lawnmower
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Maintenance
+      summary: Return the current location and state of the lawnmower
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LawnMower'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Maintenance
+      summary: Change the state of a lawnmower
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  description: Controls the running state of the lawnmower
+                  type: object
+                  properties:
+                    mowerCall:
+                      type: string
+                      description: "Change the mowing state of the mower (start or stop)"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestID:
+                    type: string
+                    description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+
   /facilities:
     get:
       tags:
@@ -2756,7 +2927,7 @@ paths:
     post:
       tags:
         - V2X
-      summary: For RSUs with support, pack posted data into active protocol format and broadcasts the BSM.
+      summary: For RSUs with support, pack posted data into active protocol format and broadcasts the BSM.  Request body type allows for sending a pre-packed message to be sent as a direct payload or for a JSON format that will be encoded to the appropriate message format and broadcast serverside.
         request ID on success.
       requestBody:
         content:
@@ -2765,6 +2936,9 @@ paths:
               type: object
               description: A V2X BSM to be sent.
               $ref: '#/components/schemas/V2XBSM'
+          application/octet-stream:
+            schema:
+              type: object
       responses:
         200:
           description: Success
@@ -2776,6 +2950,48 @@ paths:
                   requestID:
                     type: string
                     description: Work request ID.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /v2x/rsu/{id}/bsms:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A V2X ID number.
+        schema:
+          type: integer
+          minimum: 1
+    post:
+      tags:
+        - V2X
+      summary: For RSUs with support, pack posted data into active protocol format and broadcasts each row through the BSM.
+        request ID on success.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/V2XBSM'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestIDs:
+                    type: array
+                    description: Work request IDs
+                    items:
+                      type: string
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -2796,15 +3012,15 @@ paths:
     post:
       tags:
         - V2X
-      summary: For RSUs with support, pack posted data into active protocol format and broadcasts the PSM.
-        request ID on success.
+      summary: For RSUs with support, pack posted data into active protocol format and broadcasts the PSM. Request body type allows for sending a pre-packed message to be sent as a direct payload or for a JSON format that will be encoded to the appropriate message format and broadcast server side. request ID on success.
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              description: A V2X PSM to be sent.
               $ref: '#/components/schemas/V2XPSM'
+          application/octet-stream:
+            schema:
+              type: object
       responses:
         200:
           description: Success
@@ -2994,7 +3210,7 @@ paths:
                     example: "2019-03-16T16:47:04.123-4:00"
                   state:
                     $ref: '#/components/schemas/V2X'
-              
+
   /octane/v2x_request:
     get:
       tags:
@@ -3061,6 +3277,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/V2XBSM'
+    post:
+      tags:
+        - WebSockets-Events
+      summary: Broadcast a V2X BSM message through an RSU
+      responses:
+        200:
+          description: Success
+      requestBody:
+        content:
+          application/json:
+            schema:
+                type: object
+                description: Payload for broadcasting a message via a RSU
+                properties:
+                  id:
+                    description: Identifier of the RSU to broadcast the message
+                    type: string   
+                  payload:
+                    $ref: '#/components/schemas/V2XBSM'
   /octane/v2x_PSM:
     get:
       tags:
@@ -3073,6 +3308,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/V2XPSM'
+    post:
+      tags:
+        - WebSockets-Events
+      summary: Broadcast a V2X BSM message through an RSU
+      responses:
+        200:
+          description: Success
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Payload for broadcasting a message via a RSU
+              properties:
+                id:
+                  description: Identifier of the RSU to broadcast the message
+                  type: string   
+                payload:
+                  $ref: '#/components/schemas/V2XPSM'
   /management/modules:
     get:
       tags:
@@ -3154,7 +3408,7 @@ paths:
           description: Internal server error
   /management/favorite/{moduleName}/{favoriteId}:
     delete:
-      parameters: 
+      parameters:
         - name: moduleName
           in: path
           required: true
@@ -3170,7 +3424,7 @@ paths:
             type: integer
             description: Type of infrastructure id
       tags:
-      - Management
+        - Management
       summary: "Delete a favorite from the database."
       responses:
         200:
@@ -3406,7 +3660,7 @@ paths:
         404:
           $ref: '#/components/responses/NotFoundError'
         500:
-          description: Internal server error        
+          description: Internal server error
     post:
       tags:
         - Sessions
@@ -3709,14 +3963,14 @@ paths:
               type: object
               properties:
                 scenario:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        description: Name of the scenario
-                      workspace:
-                        type: string
-                        description: The XML structure containing the code to be run in the scenario
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the scenario
+                    workspace:
+                      type: string
+                      description: The XML structure containing the code to be run in the scenario
       responses:
         200:
           description: Success
@@ -3738,7 +3992,7 @@ paths:
           description: Internal server error
     delete:
       tags:
-      - Scenarios
+        - Scenarios
       summary: "Delete a scenario from the database"
       responses:
         200:
@@ -3770,14 +4024,14 @@ paths:
               type: object
               properties:
                 scenario:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        description: Name of the scenario
-                      workspace:
-                        type: string
-                        description: The XML structure containing the code to be run in the scenario
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the scenario
+                    workspace:
+                      type: string
+                      description: The XML structure containing the code to be run in the scenario
       responses:
         200:
           description: Success
@@ -4101,12 +4355,12 @@ components:
         moduleName:
           type: string
           title: infrastructure type
-        favoriteID: 
+        favoriteID:
           type: integer
           title: infrastructure type id
     Light:
       type: object
-      description: Describes a street light within the facility. Non-instrumented street lights reject control requests.  
+      description: Describes a street light within the facility. Non-instrumented street lights reject control requests.
       required:
         - id
       properties:
@@ -4159,7 +4413,7 @@ components:
 
     Garage:
       type: object
-      description: Describes a garage state.  
+      description: Describes a garage state.
       required:
         - id
       properties:
@@ -4234,47 +4488,7 @@ components:
           type: array
           description: A listing of configured non-conflicting sets of phases that can be used for control.
           items:
-            type: object
-            properties:
-              number:
-                type: integer
-                description: Phase ID number
-              turn:
-                type: string
-                description: The direction of turn phase is manages.
-                enum: [through, left, right]
-              bound:
-                type: string
-                description: The direction of traffic flow this lane is bound to.
-                example: "south"
-              stop_bar:
-                type: object
-                description: A list of lat/lng points representing the upper left, upper right, lower left, and lower right corners of the stop bar corresponding to the phase.
-                properties:
-                  ul_lat:
-                    type: number
-                    description: Upper left latitude stop bar location
-                  ul_lng:
-                    type: number
-                    description: Upper left longitude stop bar location
-                  ur_lat:
-                    type: number
-                    description: Upper right latitude stop bar location
-                  ur_lng:
-                    type: number
-                    description: Upper right longitude stop bar location
-                  ll_lat:
-                    type: number
-                    description: Lower left latitude stop bar location
-                  ll_lng:
-                    type: number
-                    description: Lower left longitude stop bar location
-                  lr_lat:
-                    type: number
-                    description: Lower right latitude stop bar location
-                  lr_lng:
-                    type: number
-                    description: Lower right longitude stop bar location
+            $ref: '#/components/schemas/Phase'
         stages:
           type: array
           description: A listing of configured non-conflicting sets of phases that can be used for control.
@@ -4585,10 +4799,10 @@ components:
             - egg-crate
             - tunnel
             - cap
-        call-button:
+        callButton:
           type: boolean
           description: Can a pedestrian place a call or trigger this crosswalk with a button
-        tactile-surface:
+        tactileSurface:
           type: boolean
           description: Does the entrance to the crosswalk feature a tactile surface
         state:
@@ -4597,7 +4811,7 @@ components:
       type: object
       description: The current state of the crosswalk
       properties:
-        pedestrianCall:
+        callPedestrian:
           type: boolean
           description: Pedestrian call placed, but has not been serviced.
         activated:
@@ -4616,6 +4830,15 @@ components:
         countdownTime:
           description: The time remaining in this crosswalk phase if instrumented.
           type: integer
+        pedestrianClear:
+          type: boolean
+          description: Pedestrian clear is active
+        walkDont:
+          type: boolean
+          description: DONT WALK sign is active
+        walk:
+          type: boolean
+          description: WALK sign is active
         updated:
           description: The last time the status of this crosswalk was updated
           type: string
@@ -4722,7 +4945,7 @@ components:
           description: The sensor type
         manufacturer:
           type: string
-          description: The sensor manufacturer 
+          description: The sensor manufacturer
         model:
           type: string
           description: The model number/name of the sensor
@@ -4762,7 +4985,7 @@ components:
           description: The sensor type
         manufacturer:
           type: string
-          description: The sensor manufacturer 
+          description: The sensor manufacturer
         model:
           type: string
           description: The model number/name of the sensor
@@ -4832,7 +5055,7 @@ components:
           description: The sensor type
         manufacturer:
           type: string
-          description: The sensor package manufacturer 
+          description: The sensor package manufacturer
         model:
           type: string
           description: The model number/name of the sensor package
@@ -4893,7 +5116,7 @@ components:
           description: The sensor type
         manufacturer:
           type: string
-          description: The sensor manufacturer 
+          description: The sensor manufacturer
         model:
           type: string
           description: The model number/name of the sensor
@@ -4954,7 +5177,7 @@ components:
           description: The sensor type
         manufacturer:
           type: string
-          description: The sensor manufacturer 
+          description: The sensor manufacturer
         model:
           type: string
           description: The model number/name of the sensor
@@ -5041,6 +5264,22 @@ components:
         name:
           type: string
           description: A text based description of the safety equipment.
+    MaintenanceEquipment:
+      type: object
+      description: Maintenance equipment - lawnmower
+      required:
+        - id
+        - unitID
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this piece of maintenance equipment
+        unitID:
+          type: string
+          description: The unit ID that the maintenance equipment responds with.
+        name:
+          type: string
+          description: A text based description of the maintenance equipment.
     MessageBoard:
       type: object
       description: Roadside message board
@@ -5069,9 +5308,8 @@ components:
       type: object
       description: The current state of the sign board
       properties:
-        content_type:
+        contentType:
           type: string
-          enum: [text, pattern]
           description: The current content type ('text' or 'pattern') of the sign board
         content:
           type: string
@@ -5082,6 +5320,31 @@ components:
         latitude:
           type: number
           description: The latitude of the centroid of the sign board
+    LawnMower:
+      type: object
+      description: Automated lawnmower at Mcity
+      required:
+        - id
+        - unitID
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this lawnmower
+        unitID:
+          type: string
+          description: The unit ID that the lawnmower responds with.  This is the manufacturers identification number.
+        state:
+          $ref: '#/components/schemas/LawnMowerState'
+    LawnMowerState:
+      type: object
+      description: The current state of the lawn mower
+      properties:
+        mowerCall:
+          type: string
+          description: The current running state of the lawnmower
+        batteryCharge:
+          type: integer
+          description: The charge % of the battery
     Facility:
       type: object
       description: Describes the facility.
@@ -5121,33 +5384,51 @@ components:
               description:
                 type: string
                 description: A description of the contents of this overlay.
-              longitude:
-                type: number
-                description: The longitude of the centroid of the overlay
-              latitude:
-                type: number
-                description: The latitude of the centroid of the overlay
+              ul:
+                type: object
+                description: A latitude/longitude pair representing the upper left point of an overlay.
+                properties:
+                  latitude:
+                    type: number
+                    description: Upper left latitude
+                  longitude:
+                    type: number
+                    description: Upper left longitude
+              lr:
+                type: object
+                description: A latitude/longitude pair representing the lower right point of an overlay.
+                properties:
+                  latitude:
+                    type: number
+                    description: Upper right latitude
+                  longitude:
+                    type: number
+                    description: Upper right longitude
               url:
                 type: string
                 description: A url pointing to the overlay file.
-              zLayer:
+              opacity:
                 type: integer
-                description: An integer describing stacking orders for overlays (0 base layer-100 highest)
-        contactMaintenance:
-          type: string
-          description: Facility Maintenance contact
-        contactReservations:
-          type: string
-          description: Facility Reservation Contact
-        contactManager:
-          type: string
-          description: Facility Manager Contact
-        contactTechnical:
-          type: string
-          description: Facility Technical Contact
-        contactEmergency:
-          type: string
-          description: Facility Emergency Contact
+                description: A suggested opacity to be used when displaying this layer.
+        contact:
+          type: object
+          description: Object representing all contact information of the facility.
+          properties:
+            maintenance:
+              type: string
+              description: Facility Maintenance Contact
+            reservations:
+              type: string
+              description: Facility Reservation Contact
+            manager:
+              type: string
+              description: Facility Manager Contact
+            technical:
+              type: string
+              description: Facility Technical Contact
+            emergency:
+              type: string
+              description: Facility Emergency Contact
         unitDistance:
           type: string
           description: Facility Unit for Distance
@@ -5156,7 +5437,7 @@ components:
           description: Facility Unit for Mass
     V2X:
       type: object
-      description: Describes for a V2X (Vehicle to Everything) connected device within the facility. 
+      description: Describes for a V2X (Vehicle to Everything) connected device within the facility.
         status.
       required:
         - id
@@ -5194,13 +5475,21 @@ components:
                 enum: [DSRC, CV2X]
               messageSet:
                 type: string
+                description: The message set this type is supported in for this radio.
                 enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
-        messageTypes:
-          type: string
-          enum: [BSM, SPaT, MAP, TIM]
+              messageType:
+                type: string
+                description: The message type supported.
+                example: BSM, PSM, SPaT, MAP, TIM, RTCM
+              rxEnabled:
+                type: boolean
+                description: This radio will provide received messages of this type to OCTANE.
+              txEnabled:
+                type: boolean
+                description: This radio allows for sending messages of this type through OCTANE.
         manufacturer:
           type: string
-          description: The OBU/RSU manufacturer 
+          description: The OBU/RSU manufacturer
         model:
           type: string
           description: The OBU/RSU model
@@ -5236,6 +5525,16 @@ components:
                   messageSet:
                     type: string
                     enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+                  messageType:
+                    type: string
+                    description: The message type supported.
+                    enum: [BSM, PSM, SPaT, MAP, TIM, RTCM]
+                  rxEnabled:
+                    type: boolean
+                    description: This radio will provide received messages of this type to OCTANE.
+                  txEnabled:
+                    type: boolean
+                    description: This radio allows for sending messages of this type through OCTANE.
             updated:
               description: The last time the status of this device was updated.
               type: string
@@ -5378,16 +5677,16 @@ components:
           description: Latitude of the transmitting V2X device.
         elevation:
           type: number
-          description: Elevation of transmitting V2X device. Units increments of 0.1 m
+          description: Elevation of transmitting V2X device. Units in meters
         speed:
           type: number
-          description: Reported Velocity of V2X Device. Units increment of 0.02 m/s
+          description: Reported Velocity of V2X Device. Units in meters/second
         heading:
           type: number
           description: 0 to 359.9875 degrees.
         angle:
           type: number
-          description: 0 is true north. 1.5 degree increments.
+          description: 0 to 359.9875 degrees.
     V2XPSM:
       type: object
       description: Personal Safety Message received from an OBU.
@@ -5411,10 +5710,10 @@ components:
           description: Latitude of the transmitting V2X device.
         elevation:
           type: number
-          description: Elevation of transmitting V2X device. Units increments of 0.1 m
+          description: Elevation of transmitting V2X device. Units in meters
         speed:
           type: number
-          description: Reported Velocity of V2X Device. Units increment of 0.02 m/s
+          description: Reported Velocity of V2X Device. Units in m/s
         heading:
           type: number
           description: 0 to 359.9875 degrees.
