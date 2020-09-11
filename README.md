@@ -23,9 +23,9 @@ The easiest way to visualize the API is by viewing the Mcity implementation on [
 You can use the [Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/mcity/octane-api/master/api.yaml) to work with this spec.
 
 # Status of OCTANE
-July 14th, 2020 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development.
+September 11th, 2020 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development.
 
-We host both a test and production environment of this implementation for users of the test facility.
+We presently host a test (Mvillage), production (Mcity), and City of Ann Arbor, MI (AACE) environment based on the Mcity implementation of this API spec.
 The test environment can be found at https://octane.mvillage.um.city/apidocs.
 
 The Mcity implementation of this API and supporting tools can be licensed from the University of Michigan. Please contact us for more information.
@@ -50,15 +50,17 @@ Implemented:
 * V2X - Enumeration and power control, TSCBM/SPaT/BSM/BSM send/receive
 * Maintenance devices - Lawnmowers
 * Triggers
+* Robot Enumeration (And basic scenario control)
+* Requests and logging of status.
+* Weather Alerts
 
 Planned Development Schedule:
-* 08/2020 - Edge Nodes, Robot Control, Weather state, Logging / Requests
-* 09/2020 - Scenario Server side processing, Sensor Data Collection
+* 09/2020 - Edge Nodes, Robot Control Schemas, Weather, Store and Repeat V2X messages
+* 10/2020 - Scenario Server side processing, Sensor Data Collection, 
 * 11/2020 - First full API spec release (RON 1)
 
 # Release schedule / numbering
 The latest version of the API lives in the master branch in api.yaml
-
 
 Released are granted a Release Order Number (RON) and each RON will have it's own branch at time of release. 
 The highest RON branch is the latest standard of the API.
@@ -74,6 +76,7 @@ The highest RON branch is the latest standard of the API.
 * 03/31/20 - Release .0.9 Add lighting control, garage door control, and initial implementations for safety devices. Multi-tenant facility support was added along with session management endpoints. Initial point of interest socket messages, along with work to support multiple map overlays at a facility. Intersection support has been enhanced by adding stop block enumeration for intersections with support.
 * 04/10/20 - Cleanup of this repository and additional documentation. Additions to .9 spec to handle PSM V2X broadcast.
 * 07/14/20 - Adds .10 spec to handle cleaner PSM/SPaT/BSM broadcast and receive. Addition of maintenance device endpoints.
+* 09/11/20 - Adds additional V2X endpoints, initial requests framework, weather alerts.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.

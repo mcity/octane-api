@@ -71,6 +71,11 @@ tags:
     externalDocs:
       description: Mcity's maintenance equipment
       url: https://members.um.city/wiki/track/maintenance
+  - name: Weather
+    description: Weather alert and weather data feed
+    externalDocs:
+      description: Weather
+      url: https://members.um.city/wiki/track/weather
   - name: Sensors
     description: Raw sensor feed, enumeration, and control
     externalDocs:
@@ -101,6 +106,11 @@ tags:
     externalDocs:
       description: Save, restore, and run test case scripts to setup a facility in a specific way and trigger on events.
       url: https://mcity.umich.edu
+  - name: Requests
+    description: Information about current requests
+    externalDocs:
+      description: Mcity's requests
+      url: https://members.um.city/wiki/track/requests
   - name: Sessions
     description: Manage active user sessions, session logging, and session notification.
     externalDocs:
@@ -942,27 +952,27 @@ paths:
                         color:
                           type: string
                           enum:
-                            - red
-                            - yellow
-                            - green
+                            - RED
+                            - YELLOW
+                            - GREEN
                     right:
                       type: object
                       properties:
                         color:
                           type: string
                           enum:
-                            - red
-                            - yellow
-                            - green
+                            - RED
+                            - YELLOW
+                            - GREEN
                     straight:
                       type: object
                       properties:
                         color:
                           type: string
                           enum:
-                            - red
-                            - yellow
-                            - green
+                            - RED
+                            - YELLOW
+                            - GREEN
       responses:
         200:
           description: Success
@@ -1454,6 +1464,109 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/Gate'
+  /weather/alerts/current:
+    get:
+      tags:
+        - Weather
+      summary: Return the current weather alert
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  alerts:
+                    type: array
+                    description: A single weather alert
+                    items:
+                      $ref: '#/components/schemas/WeatherAlert'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /weather/alerts/{date}:
+    parameters:
+      - in: path
+        name: date
+        required: true
+        description: YYYY-MM-DD
+        schema:
+          type: string
+    get:
+      tags:
+        - Weather
+      summary: Return a list of weather alerts from given date
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  alerts:
+                    type: array
+                    description: A single weather alert
+                    items:
+                      $ref: '#/components/schemas/WeatherAlert'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /octane/weather:
+    get:
+      tags:
+        - WebSockets-Channels
+      summary: Channel used for publishing weather_* events.
+      responses:
+        200:
+          description: Joined the weather channel.
+  /octane/weather_alert:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted to users when a new weather alert is broadcast.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: New weather Alert
+                $ref: '#/components/schemas/WeatherAlert'
+  /octane/weather_alert_update:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted to users when a weather alert is sent to OCTANE.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Weather alert update update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this weather alert
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/WeatherAlertState'
   /sensors:
     get:
       tags:
@@ -3150,7 +3263,7 @@ paths:
     get:
       tags:
         - WebSockets-Channels
-      summary: COMING SOON - Channel used for publishing raw v2x_* events from all known OBUs.
+      summary: Channel used for publishing raw v2x_* events from all known OBUs.
       responses:
         200:
           description: Join of Channel
@@ -3564,7 +3677,198 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
-
+  /requests/queued:
+    get:
+      summary: Return information of all jobs queued by this user.
+      tags:
+        - Requests
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  queuedJobs:
+                    type: array
+                    items:
+                      properties:
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Time given request was created
+                          example: "2019-03-16T16:47:04.123-4:00"
+                        enqueuedAt:
+                          type: string
+                          format: date-time
+                          description: Time given request was enqueued
+                          example: "2019-03-16T16:47:04.123-4:00"
+                        jobType:
+                          type: string
+                          description: Type of request
+                        timeInQueue:
+                          type: string
+                          format: date-time
+                          description: Time request has been in current status
+                          example: "2019-03-16T16:47:04.123-4:00"
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /requests/failed:
+    get:
+      summary: Return information of all jobs requested by this user in a failed state.
+      tags:
+        - Requests
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  failedJobs:
+                    type: array
+                    items:
+                      properties:
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Time given request was created
+                          example: "2019-03-16T16:47:04.123-4:00"
+                        enqueuedAt:
+                          type: string
+                          format: date-time
+                          description: Time given request was enqueued
+                          example: "2019-03-16T16:47:04.123-4:00"
+                        jobType:
+                          type: string
+                          description: Type of request
+                        timeInQueue:
+                          type: string
+                          format: date-time
+                          description: Time request has been in current status
+                          example: "2019-03-16T16:47:04.123-4:00"
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /requests/job/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A request ID string
+        schema:
+          type: string
+          minimum: 1
+    get:
+      summary: Return information of request with given id
+      tags:
+        - Requests
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failedRequests:
+                    properties:
+                      createdAt:
+                        type: string
+                        format: date-time
+                        description: Time given request was created
+                        example: "2019-03-16T16:47:04.123-4:00"
+                      enqueuedAt:
+                        type: string
+                        format: date-time
+                        description: Time given request was enqueued
+                        example: "2019-03-16T16:47:04.123-4:00"
+                      status:
+                        type: string
+                        description: Current status of given request
+                      description:
+                        type: string
+                        description: Type of request
+                      timeInStatus:
+                        type: string
+                        format: date-time
+                        description: Time request has been in current status
+                        example: "2019-03-16T16:47:04.123-4:00"
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /requests/job/{type}/queued:
+    parameters:
+      - in: path
+        name: type
+        required: true
+        description: A request type string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      summary: Return list of queued {type} requests
+      tags:
+        - Requests
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  queuedRequests:
+                    type: string
+                    description: Request ID for queued requests of given type.
+  /requests/job/{type}/failed:
+    parameters:
+      - in: path
+        name: type
+        required: true
+        description: A requests type string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      summary: Return list of failed {type} requests
+      tags:
+        - Requests
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failedRequests:
+                    type: string
+                    description: Request ID for failed requests of given type.
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
   /sessions:
     get:
       tags:
@@ -4266,9 +4570,9 @@ components:
               description: Color of signal if active
               nullable: true
               enum:
-                - red
-                - yellow
-                - green
+                - RED
+                - YELLOW
+                - GREEN
             status:
               type: string
               description: Light status
@@ -4296,9 +4600,9 @@ components:
               description: Color of signal if active
               nullable: true
               enum:
-                - red
-                - yellow
-                - green
+                - RED
+                - YELLOW
+                - GREEN
             status:
               type: string
               description: Light status
@@ -4325,9 +4629,9 @@ components:
               type: string
               description: Color of signal if active
               enum:
-                - red
-                - yellow
-                - green
+                - RED
+                - YELLOW
+                - GREEN
               nullable: true
             status:
               type: string
@@ -4907,6 +5211,68 @@ components:
           description: The last time the status of this gate was updated
           type: string
           format: date-time
+    WeatherAlert:
+      type: object
+      description: Weather alert
+      required:
+        - id
+        - description
+        - instruction
+      properties:
+        id:
+          type: string
+          description: An ID number identifying this weather alert
+        description:
+          type: string
+          description: Additional information about the event
+        instruction:
+          type: string
+          description: An advisory message
+        state:
+          $ref: '#/components/schemas/WeatherAlertState'
+    WeatherAlertState:
+      type: object
+      description: The current state of a weather alert
+      required:
+        - dateValid
+        - onset
+        - dateExpire
+        - status
+        - severity
+        - certainty
+        - urgency
+        - event
+      properties:
+        event:
+          type: string
+          description: The event name
+        dateValid:
+          type: string
+          description: The DateTime the alert is effective
+        onset:
+          type: string
+          description: The DateTime of the onset of the event
+        dateExpire:
+          type: string
+          description: The DateTime when the alert expires
+        ends:
+          type: string
+          description: The DateTime of the end of the event
+        status:
+          type: string
+          description: Status (actual, exercise, system, test, draft)
+        severity:
+          type: string
+          description: Severity (extreme, severe, moderate, minor, unknown)
+        certainty:
+          type: string
+          description: Certainty (observed, likely, possible, unlikely, unknown)
+        urgency:
+          type: string
+          description: Urgency (immediate, expected, future, past, unknown)
+        updated:
+          type: string
+          description: The last time the status of this alert was updated.
     Sensor:
       type: object
       description: A sensor or grouping of sensors located within the facility
@@ -5274,12 +5640,17 @@ components:
         id:
           type: string
           description: An ID number identifying this piece of maintenance equipment
-        unitID:
-          type: string
-          description: The unit ID that the maintenance equipment responds with.
         name:
           type: string
           description: A text based description of the maintenance equipment.
+        state:
+          type: object
+          oneOf:
+           - $ref: '#/components/schemas/LawnMowerState'
+          description: The current state of the maintenance device
+        type:
+          type: string
+          description: The maintenance equipment type
     MessageBoard:
       type: object
       description: Roadside message board
@@ -5330,6 +5701,9 @@ components:
         id:
           type: string
           description: An ID number identifying this lawnmower
+        name:
+          type: string
+          description: A text based description of this lawnmower
         unitID:
           type: string
           description: The unit ID that the lawnmower responds with.  This is the manufacturers identification number.
@@ -5476,7 +5850,7 @@ components:
               messageSet:
                 type: string
                 description: The message set this type is supported in for this radio.
-                enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+                enum: [NTCIP, J2735_200612, J2735_200911, J2735_201509, J2735_201601, J2735_201603]
               messageType:
                 type: string
                 description: The message type supported.
@@ -5524,7 +5898,7 @@ components:
                     enum: [DSRC, CV2X]
                   messageSet:
                     type: string
-                    enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+                    enum: [NTCIP, J2735_200612, J2735_200911, J2735_201509, J2735_201601, J2735_201603]
                   messageType:
                     type: string
                     description: The message type supported.
@@ -5559,7 +5933,7 @@ components:
         messageSet:
           description: The original format this message was broadcast in before decoding.
           type: string
-          enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+          enum: [NTCIP, J2735_200612, J2735_200911, J2735_201509, J2735_201601, J2735_201603]
         updated:
           description: The date time of this message was parsed.
           type: string
@@ -5633,7 +6007,7 @@ components:
         messageSet:
           description: The format, if known, this message is broadcast in.
           type: string
-          enum: [NTCIP, J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+          enum: [NTCIP, J2735_200612, J2735_200911, J2735_201509, J2735_201601, J2735_201603]
         updated:
           description: The date and time this message was broadcast by OCTANE.
           type: string
@@ -5658,7 +6032,7 @@ components:
         messageSet:
           description: The original format this message was broadcast in before decoding.
           type: string
-          enum: [J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+          enum: [J2735_200612, J2735_200911, J2735_201509, J2735_201601, J2735_201603]
         vehicleLength:
           description: Vehicle length in Meters
           type: number
@@ -5697,7 +6071,7 @@ components:
         messageSet:
           description: The original format this message was broadcast in before decoding.
           type: string
-          enum: [J2735_200612, J2735_200911, J2375_201509, J2375_201601, J2375_201603]
+          enum: [J2735_200612, J2735_200911, J2735_201509, J2735_201601, J2735_201603]
         updated:
           description: The date time this message was sent via OCTANE.
           type: string
