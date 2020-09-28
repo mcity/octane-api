@@ -23,7 +23,7 @@ The easiest way to visualize the API is by viewing the Mcity implementation on [
 You can use the [Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/mcity/octane-api/master/api.yaml) to work with this spec.
 
 # Status of OCTANE
-September 11th, 2020 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development.
+September 27th, 2020 - Mcity runs an implementation of the Octane API specified in this repository. The specification and implementation are both under active development.
 
 We presently host a test (Mvillage), production (Mcity), and City of Ann Arbor, MI (AACE) environment based on the Mcity implementation of this API spec.
 The test environment can be found at https://octane.mvillage.um.city/apidocs.
@@ -50,14 +50,14 @@ Implemented:
 * V2X - Enumeration and power control, TSCBM/SPaT/BSM/BSM send/receive
 * Maintenance devices - Lawnmowers
 * Triggers
-* Robot Enumeration (And basic scenario control)
+* Robot enumeration, control, and scenario management.
 * Requests and logging of status.
 * Weather Alerts
 
 Planned Development Schedule:
-* 09/2020 - Edge Nodes, Robot Control Schemas, Weather, Store and Repeat V2X messages
-* 10/2020 - Scenario Server side processing, Sensor Data Collection, 
-* 11/2020 - First full API spec release (RON 1)
+* 09/2020 - Weather data feed, Store and Repeat V2X messages
+* 10/2020 - Edge Nodes, Scenario Server side processing, Sensor Data Collection, 
+* 12/2020 - First full API spec release (RON 1)
 
 # Release schedule / numbering
 The latest version of the API lives in the master branch in api.yaml
@@ -77,6 +77,7 @@ The highest RON branch is the latest standard of the API.
 * 04/10/20 - Cleanup of this repository and additional documentation. Additions to .9 spec to handle PSM V2X broadcast.
 * 07/14/20 - Adds .10 spec to handle cleaner PSM/SPaT/BSM broadcast and receive. Addition of maintenance device endpoints.
 * 09/11/20 - Adds additional V2X endpoints, initial requests framework, weather alerts.
+* 09/27/20 - Add .11 spec with initial Robot module work.
 
 # Contributing to OCTANE
 To contribute to releases, submit requests through the GitHub issues feature for discussion or proposed changed via Pull Requests.

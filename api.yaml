@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   description: Mcity implementation of OCTANE RESTful/Websocket API designed for autonomous
     and connected vehicle test facilities/cities.
-  version: 0.0.10
+  version: 0.0.11
   title: Mcity Control API
   contact:
     name: API support
@@ -81,6 +81,11 @@ tags:
     externalDocs:
       description: Mcity's sensors
       url: https://members.um.city/wiki/track/sensors
+  - name: Robots
+    description: Information about OCTANE configured robots
+    externalDocs:
+      description: Discover Mcity
+      url: https://mcity.umich.edu
   - name: V2X
     description: V2X RSU and OBU management, near real time messages available via WebSocket
     externalDocs:
@@ -2248,6 +2253,325 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/SensorState'
+  /robots:
+    get:
+      tags:
+        - Robots
+      summary: Return a list of robots configured for this facility
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  robots:
+                    type: array
+                    description: A list of robots
+                    items:
+                      $ref: '#/components/schemas/Robot'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /robot/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A robot ID string.
+        schema:
+          type: number
+          minimum: 1
+    get:
+      tags:
+        - Robots
+      summary: Return a information about a robot with the specified ID.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  robot:
+                    $ref: '#/components/schemas/Robot'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    patch:
+      tags:
+        - Robots
+      summary: Allows enabling/disabling control of a robot.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  description: Controls state of a specific robot related to motion.
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Power on or off robot if controllable remotely. If robot is activated, deactivates robot. When this attribute is included and power is controllable, the activated and scenario attributes are ignored.
+                    activated:
+                      type: boolean
+                      description: Run the currently selected scenario. If robot is in manual mode and can be switched to automated, OCTANE will switch the robot or fail this request.
+                    scenario:
+                      description: The desired next scenario for this robot.
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          description: An ID number identifying this robot scenario inside OCTANE
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  robot:
+                    $ref: '#/components/schemas/Robot'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /robot/{id}/scenarios:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A robot ID string.
+        schema:
+          type: number
+          minimum: 1
+    get:
+      tags:
+        - Robots
+      summary: Return a list of all configured/stored scenarios for a robot.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  scenarios:
+                    type: array
+                    description: A list of robots
+                    items:
+                      $ref: '#/components/schemas/RobotScenario'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+  /robot/{id}/scenario:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A robot ID string.
+        schema:
+          type: string
+          minimum: 1
+    get:
+      tags:
+        - Robots
+      summary: The currently selected scenario for this robot.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotScenario'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - Robots
+      summary: Creates a new user defined scenario for this robot.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scenario:
+                  $ref: '#/components/schemas/RobotScenario'
+      responses:
+        200:
+          description: Success, returns created scenario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotScenario'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error   
+  /robot/{id}/scenario/{scenarioId}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: A robot ID number.
+        schema:
+          type: number
+          minimum: 1
+      - in: path
+        name: scenarioId
+        required: true
+        description: A robot scenario string.
+        schema:
+          type: number
+          minimum: 1
+    get:
+      tags:
+        - Robots
+      summary: Return a robot scenario with the specified ID.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  scenario:
+                    $ref: '#/components/schemas/RobotScenario'
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+    delete:
+      tags:
+        - Robots
+      summary: Removes a specified non-locked scenario
+      responses:
+        200:
+          description: Success
+        400:
+          $ref: '#/components/responses/PoorFormError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+        500:
+          description: Internal server error
+      
+  /octane/robot:
+    get:
+      tags:
+        - WebSockets-Channels
+      summary: Channel used for publishing robot_* events.
+      responses:
+        200:
+          description: Join of Channel
+  /octane/robot_update:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event emitted when the state of a robot is updated.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Robot state update
+                properties:
+                  id:
+                    type: string
+                    description: An ID number identifying this robot.
+                  serviced:
+                    type: string
+                    format: date-time
+                    description: UTC date time representing when the message was published.
+                    example: "2019-03-16T16:47:04.123-4:00"
+                  state:
+                    $ref: '#/components/schemas/RobotState'
+  /octane/robot_activate:
+    post:
+      tags:
+        - WebSockets-Events
+      summary: Event submitted to request a start/stop of a robot in it's current control state and scenario.
+      responses:
+        200:
+          description: Success
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Payload for broadcasting a message via a RSU
+              properties:
+                id:
+                  description: Identifier of the Robot to control.
+                  type: string   
+                payload:
+                  type: object
+                  description: Robot control similar to patch on REST endpoint
+                  properties:
+                    activated:
+                      description: Start/stop control mode.
+                      type: boolean
+                    scenario:
+                      description: The desired next scenario for this robot.
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          description: An ID number identifying this robot scenario inside OCTANE
+  /octane/robot_request:
+    get:
+      tags:
+        - WebSockets-Events
+      summary: Event published when request to change state was made on this robot.
+      responses:
+        200:
+          description: Success
+          content:
+            "*/*":
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Robot' #_request messages are not well defined at this point in the API
+
   /safety:
     get:
       tags:
@@ -5590,6 +5914,151 @@ components:
           description: The last time the state of the sensor was updated.
           type: string
           format: date-time
+    Robot:
+      type: object
+      description: Describes a robot.
+      required:
+        - id
+      properties:
+        id:
+          type: number
+          description: An ID number identifying this robot inside OCTANE
+        uri:
+          type: string
+          description: The URI which can be used to access this robot directly
+        name:
+          type: string
+          description: A text based description of the robot (DRI Platform)
+        url:
+          type: string
+          description: A url with more information about this specific robot
+        types:
+          type: array
+          description: Control mode types supported by this robot.
+          items:
+            type: string
+            enum: [path, waypoint, geojson, external]
+        state:
+          $ref: '#/components/schemas/RobotState'
+    RobotState:
+      type: object
+      description: The current state of the robot
+      properties:
+        updated:
+          description: The last time the status of this robot was updated
+          type: string
+          format: date-time
+        longitude:
+          type: number
+          description: The last reported longitude of the robot
+        latitude:
+          type: number
+          description: The last reported longitude of the robot
+        scenario:
+          $ref: '#/components/schemas/RobotScenario'
+        activated:
+          description: Boolean value representing is the mode is currently active
+          type: boolean
+        connection:
+          type: object
+          description: A description of the robot network connection
+          properties:
+            updated:
+              description: The last time this robot contacted OCTANE
+              type: string
+              format: date-time
+            type:
+              description: Network interface for connection
+              type: string
+              enum: [DSRC, WIFI, CELLULAR, ZIGBEE, ETHERNET, DIRECT]
+            strength:
+              description: The connection strength rating 0-100 of the lowest of either RX or TX measurements.
+              type: integer
+            network:
+              description: The reported network name (Ex. MWireless, T-Mobile)
+              type: string
+        charge:
+          type: object
+          description: A description of the robot power status
+          properties:
+            updated:
+              description: The last time this robot reported power state
+              type: string
+              format: date-time
+            charging:
+              description: Is the robot charging?
+              type: boolean
+            percent:
+              description: How much percent of battery life is left? (0-100)
+              type: integer
+              format: double
+            voltage:
+              description: The current voltage of the battery
+              type: number
+        enabled: 
+          type: boolean
+          description: Is the robot powered on without a physical interlock activated?
+    RobotScenario:
+      properties:
+        id:
+          type: number
+          description: An ID number identifying this robot scenario inside OCTANE
+        name:
+          description: A short name for a scenario (ex. "Bike Merge", "Open Door")
+          type: string
+        description:
+          description: A long description of a scenario. (ex. "The bicycle will merge from a specific point.")
+          type: string
+        test:
+          description: If this robot scenario belongs to a specific overall test, the test name will be populated here.
+          type: string
+        category:
+          description: The optional type of this test
+          enum: [development, regression, production, other]
+          type: string
+        index:
+          description: Identifier number to differentiate robots in the same test, with different robot based scenarios
+          type: number
+        type:
+          description: A predefined external scenario, path, waypoint, or geojson object
+          type: string
+          enum: [path, waypoint, geojson, external]
+        lock:
+          description: The scenario cannot be deleted or modified through the API, but is instead system provided or requested as locked by a user. Contact API admin to delete or modify.
+          type: boolean
+        path:
+          description: When scenario type is PATH, represents a set of latitude and longitude points in order.
+          type: array
+          items:
+            properties:
+              longitude:
+                type: number
+                description: The next longitude destination of the robot.
+              latitude:
+                type: number
+                description: The next latitude destination of the robot.
+              velocity:
+                type: number
+                description: desired max velocity (M/S) heading to this location.
+              acceleration:
+                type: number
+                description: desired max acceleration (M/S^2) heading to this location.
+        waypoint:
+          description: When scenario is waypoint type, this represents a named latitude/longitude point.
+          type: object
+          properties:
+            longitude:
+              type: number
+              description: The next longitude destination of the robot.
+            latitude:
+              type: number
+              description: The next latitude destination of the robot.
+        geojson:
+          description: When in scenario is geojson, this represents the currently geojson specified path.
+          type: object
+        external:
+          description: Contains data/parameters needed to begin an non-OCTANE defined scenario
+          type: object
     ArrowBoard:
       type: object
       description: Roadside arrow board
