@@ -58,7 +58,7 @@ Implemented:
 
 Planned Development Schedule:
 * 02/2021 - Server side scenarios, Store and Repeat V2X messages
-* 03/2020 - Edge Nodes, Sensor Data Collection, 
+* 03/2021 - Edge Nodes, Sensor Data Collection, 
 * 06/2021 - First full API spec release (RON 1)
 
 # Release schedule / numbering
