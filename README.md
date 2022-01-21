@@ -88,4 +88,4 @@ To contribute to releases, submit requests through the GitHub issues feature for
 The OCTANE API spec is licensed through the MIT license.
 
 ## Maintainer
-This API is presently maintained by @gmcguire, @tsworman, and @eserzomcity
+This API is presently maintained by @gmcguire
