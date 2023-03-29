@@ -83,14 +83,10 @@ tags:
     url: https://mcity.umich.edu
 - name: Requests
   description: Information about current requests
-  externalDocs:
-    description: Mcity's requests
-    url: https://members.um.city/wiki/track/requests
 - name: Sessions
   description: Manage active user sessions, session logging, and session notification.
-  externalDocs:
-    description: Mcity Scheduling
-    url: https://scheduling.umich.edu
+- name: Beacons
+  description: Information about OCTANE configured beacons
 paths:
   /garages:
     x-octane-tag:
@@ -220,7 +216,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/GarageState'
   /octane/garage_request:
@@ -410,7 +406,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/LightState'
   /octane/light_request:
@@ -888,7 +884,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/IntersectionState'
   /octane/intersection_request:
@@ -1068,7 +1064,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/SignalState'
   /octane/signal_request:
@@ -1172,6 +1168,9 @@ paths:
                     activated:
                       type: boolean
                       description: Activate or deactivate the rail crossing.
+                  example:
+                    manualCall: True
+                    manualCallTimeOverride: 10
       responses:
         200:
           description: Success
@@ -1224,7 +1223,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/RailcrossingState'
   /octane/railcrossing_request:
@@ -1372,7 +1371,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/CrosswalkState'
   /octane/crosswalk_request:
@@ -1520,7 +1519,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/GateState'
   /octane/gate_request:
@@ -1647,7 +1646,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/WeatherAlertState'
   /weather/stations:
@@ -2464,7 +2463,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/SensorState'
   /octane/sensor_request:
@@ -2771,7 +2770,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/RobotState'
   /octane/robot_activate:
@@ -2797,19 +2796,24 @@ paths:
                   type: string
                 payload:
                   type: object
-                  description: Robot control similar to patch on REST endpoint
                   properties:
-                    activated:
-                      description: Start/stop control mode.
-                      type: boolean
-                    scenario:
-                      description: The desired next scenario for this robot.
+                    state: 
                       type: object
+                      description: The new desired state for the robot.
                       properties:
-                        id:
-                          type: number
-                          description: An ID number identifying this robot scenario
-                            inside OCTANE
+                        type: object
+                        description: Robot control similar to patch on REST endpoint
+                        properties:
+                          activated:
+                            description: Start/stop control mode.
+                            type: boolean
+                          scenario:
+                            description: The desired next scenario for this robot.
+                            type: object
+                            properties:
+                              id:
+                                type: number
+                                description: An ID number identifying this robot scenario inside OCTANE
   /octane/robot_request:
     x-octane-tag:
     - Robots
@@ -2846,7 +2850,7 @@ paths:
                     properties:
                       id:
                         type: string
-                      equipment_type:
+                      type:
                         $ref: '#/components/schemas/SafetyEquipmentType'
                       state:
                         properties:
@@ -3958,7 +3962,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/V2X'
   /octane/v2x_request:
@@ -4236,45 +4240,6 @@ paths:
           $ref: '#/components/responses/NotFoundError'
         500:
           description: Internal server error
-  /management/polling/intersections:
-    x-octane-tag:
-    - Management
-    patch:
-      tags:
-      - Management
-      summary: 'TOKEN TYPE: ADMIN. Start/Stop Intersection Traffic signal polling.'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                state:
-                  type: object
-                  properties:
-                    enabled:
-                      type: boolean
-                      description: Starts or terminates all polling processes.
-        description: Modifications to the process that controls intersection updates
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  requestID:
-                    type: string
-                    description: Work request ID.
-        400:
-          $ref: '#/components/responses/PoorFormError'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        404:
-          $ref: '#/components/responses/NotFoundError'
-        500:
-          description: Internal server error
   /management/facility/reset:
     x-octane-tag:
     - Management
@@ -4383,12 +4348,12 @@ paths:
                           type: string
                           format: date-time
                           description: Time given request was created
-                          example: '2019-03-16T16:47:04.123-4:00'
+                          example: '2022-04-05T12:00:10.157-04:00'
                         enqueuedAt:
                           type: string
                           format: date-time
                           description: Time given request was enqueued
-                          example: '2019-03-16T16:47:04.123-4:00'
+                          example: '2022-04-05T12:00:10.157-04:00'
                         jobType:
                           type: string
                           description: Type of request
@@ -4396,7 +4361,7 @@ paths:
                           type: string
                           format: date-time
                           description: Time request has been in current status
-                          example: '2019-03-16T16:47:04.123-4:00'
+                          example: '2022-04-05T12:00:10.157-04:00'
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -4427,12 +4392,12 @@ paths:
                           type: string
                           format: date-time
                           description: Time given request was created
-                          example: '2019-03-16T16:47:04.123-4:00'
+                          example: '2022-04-05T12:00:10.157-04:00'
                         enqueuedAt:
                           type: string
                           format: date-time
                           description: Time given request was enqueued
-                          example: '2019-03-16T16:47:04.123-4:00'
+                          example: '2022-04-05T12:00:10.157-04:00'
                         jobType:
                           type: string
                           description: Type of request
@@ -4440,7 +4405,7 @@ paths:
                           type: string
                           format: date-time
                           description: Time request has been in current status
-                          example: '2019-03-16T16:47:04.123-4:00'
+                          example: '2022-04-05T12:00:10.157-04:00'
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -4478,12 +4443,12 @@ paths:
                         type: string
                         format: date-time
                         description: Time given request was created
-                        example: '2019-03-16T16:47:04.123-4:00'
+                        example: '2022-04-05T12:00:10.157-04:00'
                       enqueuedAt:
                         type: string
                         format: date-time
                         description: Time given request was enqueued
-                        example: '2019-03-16T16:47:04.123-4:00'
+                        example: '2022-04-05T12:00:10.157-04:00'
                       status:
                         type: string
                         description: Current status of given request
@@ -4494,7 +4459,7 @@ paths:
                         type: string
                         format: date-time
                         description: Time request has been in current status
-                        example: '2019-03-16T16:47:04.123-4:00'
+                        example: '2022-04-05T12:00:10.157-04:00'
         400:
           $ref: '#/components/responses/PoorFormError'
         401:
@@ -4595,12 +4560,12 @@ paths:
                           type: string
                           format: date-time
                           description: UTC valid date time
-                          example: '2019-03-16T16:47:04.123-4:00'
+                          example: '2022-04-05T12:00:10.157-04:00'
                         dateExpire:
                           type: string
                           format: date-time
                           description: UTC expiration date time
-                          example: '2019-03-16T16:47:04.123-4:00'
+                          example: '2022-04-05T12:00:10.157-04:00'
                         facilities:
                           type: array
                           items:
@@ -4648,12 +4613,12 @@ paths:
                         type: string
                         format: date-time
                         description: UTC valid date time
-                        example: '2019-03-16T16:47:04.123-4:00'
+                        example: '2022-04-05T12:00:10.157-04:00'
                       dateExpire:
                         type: string
                         format: date-time
                         description: UTC expiration date time
-                        example: '2019-03-16T16:47:04.123-4:00'
+                        example: '2022-04-05T12:00:10.157-04:00'
                       facilities:
                         type: array
                         items:
@@ -4691,12 +4656,12 @@ paths:
                   type: string
                   format: date-time
                   description: UTC valid date time
-                  example: '2019-03-16T16:47:04-04:00'
+                  example: '2023-03-16T16:47:04.000-04:00'
                 dateExpire:
                   type: string
                   format: date-time
                   description: UTC expiration date time
-                  example: '2019-03-16T16:47:04-04:00'
+                  example: '2023-03-16T16:47:04.000-04:00'
                 facilities:
                   type: array
                   items:
@@ -4708,7 +4673,7 @@ paths:
                   - Highway
                   - Garage
         description: Request for a new token to be created. Dates are in format of
-          2019-03-16T16:47:04-04:00
+          2023-03-16T16:47:04.000-04:00
       responses:
         200:
           description: Success
@@ -5113,7 +5078,7 @@ paths:
                 beacon:
                   $ref: '#/components/schemas/Beacon'
             example:
-              id_string: 0A1B2C3D4E5F
+              id: 0A1B2C3D4E5F
               name: Mcity RTK Device
               description: Mcity RTK Device mounted on cone
               host:
@@ -5250,7 +5215,7 @@ paths:
                     type: string
                     format: date-time
                     description: UTC date time representing when the message was published.
-                    example: '2019-03-16T16:47:04.123-4:00'
+                    example: '2022-04-05T12:00:10.157-04:00'
                   state:
                     $ref: '#/components/schemas/BeaconState'
   /octane/beacon_message:
@@ -5268,7 +5233,7 @@ paths:
               type: object
               description: Payload for updating the state of a Beacon
               properties:
-                id_string:
+                id:
                   description: Identifier for the Beacon
                   type: string
                 state:
@@ -6650,6 +6615,36 @@ components:
             - waypoint
             - geojson
             - external
+        scenarios:
+          type: array
+          description: Scenarios that are possible to run for this robot as configured
+          items:
+            type: object
+            description: A robot scenario
+            properties:
+              id:
+                type: number
+                description: An ID number identifying this robot scenario inside OCTANE
+              name:
+                description: A short name for a scenario (ex. "Bike Merge", "Open Door")
+                type: string
+              description:
+                description: A long description of a scenario. (ex. "The bicycle will merge from a specific point.")
+                type: string
+              test:
+                description: If this robot scenario belongs to a specific overall test, the test name will be populated here.
+                type: string
+              category:
+                description: The optional type of this test
+                enum: [development, regression, production, other]
+                type: string
+              index:
+                description: Identifier number to differentiate robots in the same test, with different robot based scenarios
+                type: number
+              type:
+                description: A predefined external scenario, path, waypoint, or geojson object
+                type: string
+                enum: [path, waypoint, geojson, external]
         state:
           $ref: '#/components/schemas/RobotState'
     RobotState:
@@ -7289,7 +7284,7 @@ components:
           - J2735_200612
           - NTCIP
         updated:
-          description: The date time of this message was parsed.
+          description: The date time this message was parsed, in ISO 8601 format.
           type: string
           format: date-time
         timeSystem:
